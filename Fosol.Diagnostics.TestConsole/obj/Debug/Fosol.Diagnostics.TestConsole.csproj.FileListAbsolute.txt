@@ -1,0 +1,11 @@
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\bin\Debug\Fosol.Diagnostics.TestConsole.exe.config
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\bin\Debug\Fosol.Diagnostics.TestConsole.exe
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\bin\Debug\Fosol.Diagnostics.TestConsole.pdb
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\bin\Debug\Fosol.Log.dll
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\bin\Debug\Fosol.Log.pdb
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.csprojResolveAssemblyReference.cache
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.exe
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.pdb
+C:\_SourceControl\Git\Fosol\master\Libraries\Fosol.Diagnostics\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.csprojResolveAssemblyReference.cache
+C:\_SourceControl\Git\Fosol\master\Libraries\Fosol.Diagnostics\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.exe
+C:\_SourceControl\Git\Fosol\master\Libraries\Fosol.Diagnostics\Fosol.Diagnostics.TestConsole\obj\Debug\Fosol.Diagnostics.TestConsole.pdb

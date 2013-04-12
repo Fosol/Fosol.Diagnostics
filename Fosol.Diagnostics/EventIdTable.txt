@@ -1,0 +1,18 @@
+﻿All events require an Id to be submitted with the message.
+Here is a table to provide categorizing Ids.
+
+First position numbers.
+#|Description
+----------------------
+0|
+1|
+2|
+3|
+4|
+5|
+
+With this simple layout it means all trace events with an Id beginning with '1' will be for verbose level events.
+
+Second position numbers.
+##|Description
+#0|

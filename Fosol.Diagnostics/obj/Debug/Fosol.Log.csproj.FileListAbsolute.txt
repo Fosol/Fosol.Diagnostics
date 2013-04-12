@@ -1,0 +1,6 @@
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\obj\Debug\Fosol.Log.csprojResolveAssemblyReference.cache
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\bin\Debug\Fosol.Log.dll.config
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\bin\Debug\Fosol.Log.dll
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\bin\Debug\Fosol.Log.pdb
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\obj\Debug\Fosol.Log.dll
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\obj\Debug\Fosol.Log.pdb

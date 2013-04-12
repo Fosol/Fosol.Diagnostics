@@ -1,0 +1,2 @@
+C:\_SourceControl\Git\Fosol\master\Libraries\Log\Fosol.Log\Fosol.Log\obj\Debug\Fosol.Diagnostics.csprojResolveAssemblyReference.cache
+C:\_SourceControl\Git\Fosol\master\Libraries\Fosol.Diagnostics\Fosol.Diagnostics\obj\Debug\Fosol.Diagnostics.csprojResolveAssemblyReference.cache

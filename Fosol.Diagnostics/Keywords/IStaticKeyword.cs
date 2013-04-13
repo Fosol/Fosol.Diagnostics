@@ -6,22 +6,17 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Keywords
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class TraceKeywordAttribute
-        : Attribute
+    internal interface IStaticKeyword
+        : ITraceKeyword
     {
         #region Variables
         #endregion
 
         #region Properties
-        public string Name { get; private set; }
+        string Text { get; }
         #endregion
 
         #region Constructors
-        public TraceKeywordAttribute(string name)
-        {
-            this.Name = name;
-        }
         #endregion
 
         #region Methods

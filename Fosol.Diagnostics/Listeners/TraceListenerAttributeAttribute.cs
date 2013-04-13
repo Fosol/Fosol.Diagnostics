@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Keywords
+namespace Fosol.Diagnostics.Listeners
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class TraceKeywordAttribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class TraceListenerAttributeAttribute
         : Attribute
     {
         #region Variables
@@ -18,7 +18,7 @@ namespace Fosol.Diagnostics.Keywords
         #endregion
 
         #region Constructors
-        public TraceKeywordAttribute(string name)
+        public TraceListenerAttributeAttribute(string name)
         {
             this.Name = name;
         }

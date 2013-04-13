@@ -6,26 +6,35 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Keywords
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class TraceKeywordAttribute
-        : Attribute
+    public sealed class StaticKeyword
+        : TraceKeywordBase, IStaticKeyword
     {
         #region Variables
+        private string _Text;
         #endregion
 
         #region Properties
-        public string Name { get; private set; }
-        #endregion
-
-        #region Constructors
-        public TraceKeywordAttribute(string name)
+        public string Text
         {
-            this.Name = name;
+            get
+            {
+                return _Text;
+            }
+            protected set
+            {
+                _Text = value;
+            }
         }
         #endregion
 
-        #region Methods
+        #region Constructors
+        #endregion
 
+        #region Methods
+        public override string ToString()
+        {
+            return this.Text;
+        }
         #endregion
 
         #region Operators

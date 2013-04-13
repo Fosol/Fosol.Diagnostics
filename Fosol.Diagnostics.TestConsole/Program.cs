@@ -9,7 +9,7 @@ namespace Fosol.Diagnostics.TestConsole
     {
         static void Main(string[] args)
         {
-            var log = Fosol.Log.LogManager.GetWriter();
+            var log = Fosol.Diagnostics.LogManager.GetWriter();
             log.Info(1, "information");
 
             Console.ReadKey();

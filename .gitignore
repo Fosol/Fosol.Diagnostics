@@ -1,5 +1,4 @@
 *.suo
-
+*.user
 bin
-
 obj

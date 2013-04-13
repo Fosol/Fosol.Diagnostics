@@ -59,5 +59,59 @@ namespace Fosol.Diagnostics.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The assembly &quot;{0}&quot; is invalid..
+        /// </summary>
+        internal static string Exception_AssemblyIsInvalid {
+            get {
+                return ResourceManager.GetString("Exception_AssemblyIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; keyword does not exist..
+        /// </summary>
+        internal static string Exception_Configuration_KeywordDoesNotExist {
+            get {
+                return ResourceManager.GetString("Exception_Configuration_KeywordDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The keyword in the configuration &quot;{0}&quot; is invalid..
+        /// </summary>
+        internal static string Exception_ConfigurationKeywordIsNotValid {
+            get {
+                return ResourceManager.GetString("Exception_ConfigurationKeywordIsNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A keyword with the name &quot;{0}&quot; already exists..
+        /// </summary>
+        internal static string Exception_KeywordAlreadyExists {
+            get {
+                return ResourceManager.GetString("Exception_KeywordAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; keyword attribute &quot;{1}&quot; is required..
+        /// </summary>
+        internal static string Exception_KeywordAttributeRequired {
+            get {
+                return ResourceManager.GetString("Exception_KeywordAttributeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This keyword &quot;{0}&quot; does not exist..
+        /// </summary>
+        internal static string Exception_KeywordDoesNotExist {
+            get {
+                return ResourceManager.GetString("Exception_KeywordDoesNotExist", resourceCulture);
+            }
+        }
     }
 }

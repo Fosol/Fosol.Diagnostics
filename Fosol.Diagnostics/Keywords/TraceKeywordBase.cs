@@ -1,4 +1,4 @@
-﻿using Fosol.Common.Extensions.NameValueCollections;
+﻿using Fosol.Common.Extensions.Dictionaries;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -12,7 +12,7 @@ namespace Fosol.Diagnostics.Keywords
 {
     /// <summary>
     /// A keyword provides a way to insert dynamic data into a message format.
-    /// Don't inherit directly from this abstract class, instead inherit from LogStaticKeyword or LogDynamicKeyword.
+    /// Don't inherit directly from this abstract class, instead inherit from DynamicKeyword.
     /// </summary>
     public abstract class TraceKeywordBase
         : ITraceKeyword
@@ -46,7 +46,7 @@ namespace Fosol.Diagnostics.Keywords
         /// Creates a new instance of a TraceKeywordBase object.
         /// Initializes the Name property with the KeywordAttribute.Name property.
         /// </summary>
-        /// <exception cref="Fosol.Common.Exceptions.MissingAttributeException">The TraceKeywordAttribute is required.</exception>
+        /// <exception cref="Fosol.Common.Exceptions.MissingAttributeException">The TraceKeywordAttributeAttribute is required.</exception>
         public TraceKeywordBase()
         {
             var attr = (TraceKeywordAttribute)Attribute.GetCustomAttribute(this.GetType(), typeof(TraceKeywordAttribute));
@@ -59,29 +59,29 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Creates a new instance of a TraceKeywordBase object.
         /// </summary>
-        /// <param name="parameters">NameValueCollection of parameters to include with this keyword.</param>
-        public TraceKeywordBase(NameValueCollection parameters)
+        /// <param name="attributes">Dictionary of attributes to include with this keyword.</param>
+        public TraceKeywordBase(StringDictionary attributes)
             : this()
         {
-            InitParameters(parameters);
+            InitAttributes(attributes);
         }
         #endregion
 
         #region Methods
         /// <summary>
-        /// Initializes the Parameters collection.
+        /// Initializes the Attributes collection.
         /// </summary>
-        /// <param name="parameters">NameValueCollection of parameters to include with this keyword.</param>
-        protected void InitParameters(NameValueCollection parameters)
+        /// <param name="attributes">Dictionary of attributes to include with this keyword.</param>
+        protected void InitAttributes(StringDictionary attributes)
         {
-            // Get all the valid parameter options.
+            // Get all the valid attributes.
             var properties = (
                 from p in this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                where p.GetCustomAttributes(typeof(TraceKeywordBaseParameterAttribute), false).FirstOrDefault() != null
+                where p.GetCustomAttributes(typeof(TraceKeywordPropertyAttribute), false).FirstOrDefault() != null
                 select new
                 {
                     Property = p,
-                    Parameter = p.GetCustomAttributes(typeof(TraceKeywordBaseParameterAttribute), false).FirstOrDefault() as TraceKeywordBaseParameterAttribute,
+                    Attribute = p.GetCustomAttributes(typeof(TraceKeywordPropertyAttribute), false).FirstOrDefault() as TraceKeywordPropertyAttribute,
                     DefaultValue = p.GetCustomAttributes(typeof(DefaultValueAttribute), false).FirstOrDefault() as DefaultValueAttribute
                 });
 
@@ -91,19 +91,19 @@ namespace Fosol.Diagnostics.Keywords
                 string value = null;
 
                 // Check if the parameters have a match.
-                if (parameters != null)
+                if (attributes != null)
                 {
-                    value = parameters[prop.Parameter.Name];
+                    value = attributes[prop.Attribute.Name];
 
                     // Go through abbreviations.
-                    if (value == null && prop.Parameter.Abbreviations != null)
+                    if (value == null && prop.Attribute.Abbreviations != null)
                     {
-                        foreach (var abbr in prop.Parameter.Abbreviations)
+                        foreach (var abbr in prop.Attribute.Abbreviations)
                         {
                             // Found a valid abbreviation.
-                            if (parameters[abbr] != null)
+                            if (attributes[abbr] != null)
                             {
-                                value = parameters[abbr];
+                                value = attributes[abbr];
                                 break;
                             }
                         }
@@ -113,18 +113,18 @@ namespace Fosol.Diagnostics.Keywords
                 // Parameter was found use it.
                 if (value != null)
                 {
-                    if (prop.Parameter.Converter == null)
+                    if (prop.Attribute.Converter == null)
                         Common.Helpers.ReflectionHelper.SetValue(prop.Property, this, value);
                     else
-                        Common.Helpers.ReflectionHelper.SetValue(prop.Property, this, value, prop.Parameter.Converter);
-                    _Parameters.Add(prop.Parameter.Name, value);
+                        Common.Helpers.ReflectionHelper.SetValue(prop.Property, this, value, prop.Attribute.Converter);
+                    this.Attributes.Add(prop.Attribute.Name, value);
                 }
                 // Use the default value.
                 else if (prop.DefaultValue != null)
                     prop.Property.SetValue(this, prop.DefaultValue.Value);
                 // This parameter is required, throw exception.
-                else if (prop.Parameter.IsRequired)
-                    throw new Exceptions.TraceKeywordBaseParameterIsRequiredException(this.Name, prop.Parameter.Name);
+                else if (prop.Attribute.IsRequired)
+                    throw new Exceptions.TraceKeywordAttributeRequiredException(this.Name, prop.Attribute.Name);
             }
         }
 
@@ -137,10 +137,10 @@ namespace Fosol.Diagnostics.Keywords
         /// <returns>Special formatted string value.</returns>
         public override string ToString()
         {
-            if (this.Parameters.Count == 0)
-                return "${" + this.Name + "}";
+            if (this.Attributes.Count == 0)
+                return "{" + this.Name + "}";
             else
-                return string.Format("${{{0}?{1}}}", this.Name, this.Parameters.ToQueryString());
+                return string.Format("{{{0}?{1}}}", this.Name, this.Attributes.ToQueryString());
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace Fosol.Diagnostics.Keywords
         public override int GetHashCode()
         {
             return this.Name.GetHashCode()
-                + this.Parameters.GetHashCode();
+                + this.Attributes.GetHashCode();
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Fosol.Diagnostics.Keywords
                 return true;
 
             if (this.Name == keyword.Name)
-                return this.Parameters.IsEqual(keyword.Parameters);
+                return this.Attributes.IsEqual(keyword.Attributes);
 
             return false;
         }

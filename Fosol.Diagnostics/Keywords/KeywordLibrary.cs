@@ -58,7 +58,7 @@ namespace Fosol.Diagnostics.Keywords
 
             var attr = keywordType.GetCustomAttribute(typeof(TraceKeywordAttribute)) as TraceKeywordAttribute;
             if (_Cache.ContainsKey(attr.Name))
-                throw new InvalidOperationException(string.Format(Resources.Strings.Exception_KeyAlreadyExists, attr.Name));
+                throw new InvalidOperationException(string.Format(Resources.Strings.Exception_KeywordAlreadyExists, attr.Name));
 
             _Cache.Add(attr.Name, keywordType);
             return _Cache.Count;

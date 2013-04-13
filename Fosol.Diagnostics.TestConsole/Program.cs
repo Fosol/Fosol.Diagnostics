@@ -13,6 +13,8 @@ namespace Fosol.Diagnostics.TestConsole
             log.Info(1, "information");
 
             Console.ReadKey();
+
+            log.Flush();
         }
     }
 }

@@ -14,7 +14,6 @@ namespace Fosol.Diagnostics
         : IDisposable
     {
         #region Variables
-
         private static readonly Keywords.TraceKeywordCache _Cache = new Keywords.TraceKeywordCache();
         private readonly string _Format;
         private readonly List<Keywords.TraceKeywordBase> _Keywords = new List<Keywords.TraceKeywordBase>();
@@ -45,21 +44,21 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Generates the dynamic text for this LogFormat.
         /// </summary>
-        /// <param name="message">LogMessage object.</param>
+        /// <param name="logEvent">LogEvent object.</param>
         /// <returns>Dynamicly generated text.</returns>
-        public string Render(LogMessage message)
+        public string Render(LogEvent logEvent)
         {
             var builder = new StringBuilder();
 
             foreach (var key in _Keywords)
             {
-                var static_key = key as Keywords.LogStaticKeyword;
-                var dynamic_key = key as Keywords.LogDynamicKeyword;
+                var static_key = key as Keywords.StaticKeyword;
+                var dynamic_key = key as Keywords.DynamicKeyword;
 
                 if (static_key != null)
                     builder.Append(static_key.Text);
                 else if (dynamic_key != null)
-                    builder.Append(dynamic_key.Generate(message));
+                    builder.Append(dynamic_key.Render(logEvent));
             }
 
             return builder.ToString();
@@ -101,14 +100,14 @@ namespace Fosol.Diagnostics
 
                 if (key == null)
                     // Return a new instance of the LiteralKeyword which will contain the text value.
-                    keyword = new Keywords.LiteralKeyword(phrase.Text);
+                    keyword = new Keywords.TextKeyword(phrase.Text);
                 else
                 {
                     // Determine the appropraite Keyword to use.
-                    var type = KeywordLibrary.Get(key.Name);
+                    var type = Keywords.KeywordLibrary.Get(key.Name);
 
-                    var is_static = typeof(Keywords.LogStaticKeyword).IsAssignableFrom(type);
-                    var is_dynamic = typeof(Keywords.LogDynamicKeyword).IsAssignableFrom(type);
+                    var is_static = typeof(Keywords.StaticKeyword).IsAssignableFrom(type);
+                    var is_dynamic = typeof(Keywords.DynamicKeyword).IsAssignableFrom(type);
                     var is_empty_constructor = type.OnlyHasEmptyConstructor();
 
                     // Return a new instance of the Keyword.
@@ -118,38 +117,38 @@ namespace Fosol.Diagnostics
                         {
                             // Use the correct constructor.
                             if (is_empty_constructor)
-                                keyword = (Keywords.LogStaticKeyword)Activator.CreateInstance(type);
-                            else if (type.HasTypeConstructor(typeof(string), typeof(System.Collections.Specialized.NameValueCollection)))
-                                keyword = (Keywords.LogStaticKeyword)Activator.CreateInstance(type, phrase.Text, key.Params);
+                                keyword = (Keywords.StaticKeyword)Activator.CreateInstance(type);
+                            else if (type.HasTypeConstructor(typeof(string), typeof(System.Collections.Specialized.StringDictionary)))
+                                keyword = (Keywords.StaticKeyword)Activator.CreateInstance(type, phrase.Text, key.Params);
                             else if (type.HasTypeConstructor(typeof(string)))
-                                keyword = (Keywords.LogStaticKeyword)Activator.CreateInstance(type, phrase.Text);
-                            else if (type.HasTypeConstructor(typeof(System.Collections.Specialized.NameValueCollection)))
-                                keyword = (Keywords.LogStaticKeyword)Activator.CreateInstance(type, key.Params);
+                                keyword = (Keywords.StaticKeyword)Activator.CreateInstance(type, phrase.Text);
+                            else if (type.HasTypeConstructor(typeof(System.Collections.Specialized.StringDictionary)))
+                                keyword = (Keywords.StaticKeyword)Activator.CreateInstance(type, key.Params);
                         }
                         else if (is_dynamic)
                         {
                             // Use the correct constructor.
                             if (is_empty_constructor)
-                                keyword = (Keywords.LogDynamicKeyword)Activator.CreateInstance(type);
+                                keyword = (Keywords.DynamicKeyword)Activator.CreateInstance(type);
                             else
-                                keyword = (Keywords.LogDynamicKeyword)Activator.CreateInstance(type, key.Params);
+                                keyword = (Keywords.DynamicKeyword)Activator.CreateInstance(type, key.Params);
                         }
                         // If for some reason they've inherited directly from the LogKeyword abstract class instead of the normal ones.
                         else
                         {
                             // Use the correct constructor.
                             if (is_empty_constructor)
-                                keyword = (Keywords.LogKeyword)Activator.CreateInstance(type);
-                            else if (type.HasTypeConstructor(typeof(string), typeof(System.Collections.Specialized.NameValueCollection)))
-                                keyword = (Keywords.LogKeyword)Activator.CreateInstance(type, phrase.Text, key.Params);
+                                keyword = (Keywords.TraceKeywordBase)Activator.CreateInstance(type);
+                            else if (type.HasTypeConstructor(typeof(string), typeof(System.Collections.Specialized.StringDictionary)))
+                                keyword = (Keywords.TraceKeywordBase)Activator.CreateInstance(type, phrase.Text, key.Params);
                             else if (type.HasTypeConstructor(typeof(string)))
-                                keyword = (Keywords.LogKeyword)Activator.CreateInstance(type, phrase.Text);
-                            else if (type.HasTypeConstructor(typeof(System.Collections.Specialized.NameValueCollection)))
-                                keyword = (Keywords.LogKeyword)Activator.CreateInstance(type, key.Params);
+                                keyword = (Keywords.TraceKeywordBase)Activator.CreateInstance(type, phrase.Text);
+                            else if (type.HasTypeConstructor(typeof(System.Collections.Specialized.StringDictionary)))
+                                keyword = (Keywords.TraceKeywordBase)Activator.CreateInstance(type, key.Params);
                         }
                     }
                     else
-                        throw new System.Configuration.ConfigurationErrorsException(string.Format(Resources.Strings.Exception_ConfigurationKeywordDoesNotExist, key.Name));
+                        throw new System.Configuration.ConfigurationErrorsException(string.Format(Resources.Strings.Exception_Configuration_KeywordDoesNotExist, key.Name));
                 }
 
                 if (!is_cached)

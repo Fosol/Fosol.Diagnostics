@@ -34,7 +34,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,19 +45,48 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigFileWatcher.cs" />
+    <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
+    <Compile Include="Keywords\AppDomainKeyword.cs" />
+    <Compile Include="Keywords\CallStackKeyword.cs" />
+    <Compile Include="Keywords\CounterKeyword.cs" />
+    <Compile Include="Keywords\GuidKeyword.cs" />
+    <Compile Include="Keywords\IdentityKeyword.cs" />
+    <Compile Include="Keywords\LogicalOperationStackKeyword.cs" />
+    <Compile Include="Keywords\MachineNameKeyword.cs" />
+    <Compile Include="Keywords\ThreadNameKeyword.cs" />
+    <Compile Include="Keywords\TicksKeyword.cs" />
+    <Compile Include="Keywords\TimestampKeyword.cs" />
+    <Compile Include="Keywords\ThreadIdKeyword.cs" />
+    <Compile Include="Keywords\ProcessIdKeyword.cs" />
+    <Compile Include="Keywords\TextKeyword.cs" />
+    <Compile Include="Keywords\DateTimeKeyword.cs" />
+    <Compile Include="Keywords\DynamicKeyword.cs" />
+    <Compile Include="Keywords\EventTypeKeyword.cs" />
+    <Compile Include="Keywords\IdKeyword.cs" />
     <Compile Include="Keywords\IDynamicKeyword.cs" />
     <Compile Include="Keywords\IStaticKeyword.cs" />
     <Compile Include="Keywords\ITraceKeyword.cs" />
     <Compile Include="Keywords\KeywordLibrary.cs" />
+    <Compile Include="Keywords\MessageKeyword.cs" />
+    <Compile Include="Keywords\NewlineKeyword.cs" />
+    <Compile Include="Keywords\SourceKeyword.cs" />
     <Compile Include="Keywords\StaticKeyword.cs" />
     <Compile Include="Keywords\TraceKeywordAttribute.cs" />
+    <Compile Include="Keywords\TraceKeywordPropertyAttribute.cs" />
     <Compile Include="Keywords\TraceKeywordBase.cs" />
+    <Compile Include="Keywords\UserKeyword.cs" />
+    <Compile Include="Keywords\WindowsIdentityKeyword.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
-    <Compile Include="Listeners\TraceListenerAttributeAttribute.cs" />
+    <Compile Include="Listeners\TextWriterListener.cs" />
+    <Compile Include="Listeners\TraceListenerPropertyAttribute.cs" />
+    <Compile Include="Listeners\TraceListenerBase.cs" />
+    <Compile Include="LogEvent.cs" />
+    <Compile Include="LogFactory.cs" />
     <Compile Include="LogFormat.cs" />
     <Compile Include="Keywords\TraceKeywordCache.cs" />
     <Compile Include="LogManager.cs" />
     <Compile Include="LogWriter.cs" />
+    <Compile Include="LogWriterCache.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Strings.Designer.cs">

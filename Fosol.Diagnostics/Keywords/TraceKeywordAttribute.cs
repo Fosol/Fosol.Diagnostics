@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Keywords
 {
+    /// <summary>
+    /// Defines the keyword name value within the special syntax ${[name]}
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class TraceKeywordAttribute
         : Attribute
@@ -14,10 +17,17 @@ namespace Fosol.Diagnostics.Keywords
         #endregion
 
         #region Properties
-        public string Name { get; private set; }
+        /// <summary>
+        /// get/set - The name of the keyword.
+        /// </summary>
+        public string Name { get; set; }
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of a TraceKeywordAttribute.
+        /// </summary>
+        /// <param name="name">Name of the keyword.</param>
         public TraceKeywordAttribute(string name)
         {
             this.Name = name;
@@ -26,9 +36,6 @@ namespace Fosol.Diagnostics.Keywords
 
         #region Methods
 
-        #endregion
-
-        #region Operators
         #endregion
 
         #region Events

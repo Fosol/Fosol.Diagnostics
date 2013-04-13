@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Keywords
 {
-    internal interface IDynamicKeyword
-        : ITraceKeyword
+    /// <summary>
+    /// The MachineNameKeyword output is the machine name.
+    /// </summary>
+    [TraceKeyword("machineName")]
+    public sealed class MachineNameKeyword
+        : StaticKeyword
     {
         #region Variables
         #endregion
@@ -16,10 +20,18 @@ namespace Fosol.Diagnostics.Keywords
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new MachineNameKeyword object.
+        /// Initialize with MachineName.
+        /// </summary>
+        public MachineNameKeyword()
+            : base(Environment.MachineName)
+        {
+        }
         #endregion
 
         #region Methods
-        string Render(LogEvent logEvent);
+
         #endregion
 
         #region Operators

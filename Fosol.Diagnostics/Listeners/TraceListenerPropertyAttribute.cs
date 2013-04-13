@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Listeners
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class TraceListenerAttributeAttribute
+    public sealed class TraceListenerPropertyAttribute
         : Attribute
     {
         #region Variables
@@ -18,7 +18,7 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Constructors
-        public TraceListenerAttributeAttribute(string name)
+        public TraceListenerPropertyAttribute(string name)
         {
             this.Name = name;
         }

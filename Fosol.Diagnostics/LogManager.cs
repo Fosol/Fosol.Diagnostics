@@ -5,47 +5,67 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics
 {
+    /// <summary>
+    /// Provides a central class to initialize LogWriter objects.
+    /// </summary>
     public sealed class LogManager
+        : IDisposable
     {
         #region Variables
-        private readonly static TraceSource _DefaultSource;
+        private static readonly LogFactory _Factory = new LogFactory();
         #endregion
 
         #region Properties
         #endregion
 
         #region Constructors
-        static LogManager()
-        {
-            _DefaultSource = new TraceSource(GetApplicationName());
-        }
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Get the default LogWriter for the application.
+        /// </summary>
+        /// <returns>LogWriter object.</returns>
         public static LogWriter GetWriter()
         {
-            return new LogWriter(_DefaultSource);
+            return _Factory.GetWriter();
         }
 
-        private static string GetApplicationName()
+        /// <summary>
+        /// Get a specific LogWriter (or create one).
+        /// </summary>
+        /// <param name="name">The unique name to identify the LogWriter source.</param>
+        /// <returns>LogWriter object.</returns>
+        public static LogWriter GetWriter(string name)
         {
-            var assembly = Assembly.GetEntryAssembly();
+            return _Factory.GetWriter(name);
+        }
 
-            if (assembly == null)
-            {
-                var module_file_name = new StringBuilder(260);
-                var size = NativeMethods.GetModuleFileName(NativeMethods.NullHandleRef, module_file_name, module_file_name.Capacity);
-                if (size > 0)
-                {
-                    return Path.GetFileNameWithoutExtension(module_file_name.ToString());
-                }
-            }
+        /// <summary>
+        /// Close all LogWriter objects.
+        /// </summary>
+        public void Close()
+        {
+            _Factory.Close();
+        }
 
-            return Path.GetFileNameWithoutExtension(assembly.EscapedCodeBase);
+        /// <summary>
+        /// Flush all LogWriter objects.
+        /// </summary>
+        public void Flush()
+        {
+            _Factory.Flush();
+        }
+
+        /// <summary>
+        /// Dispose all LogWriter objects.
+        /// </summary>
+        public void Dispose()
+        {
+            _Factory.Dispose();
         }
         #endregion
 

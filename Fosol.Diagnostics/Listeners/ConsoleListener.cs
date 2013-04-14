@@ -12,13 +12,29 @@ namespace Fosol.Diagnostics.Listeners
     /// <summary>
     /// Writes trace event messages to a console window.
     /// </summary>
-    public sealed class ConsoleListener
+    public class ConsoleListener
         : TextWriterListener
     {
         #region Variables
+        private bool _UseErrorStream;
         #endregion
 
         #region Properties
+        /// <summary>
+        /// get - Whether this console listener uses the Console.Error stream.
+        /// </summary>
+        public bool UseErrorStream
+        {
+            get
+            {
+                return GetValue(ref _UseErrorStream);
+            }
+            private set
+            {
+                SetValue(ref _UseErrorStream, value);
+            }
+        }
+
         /// <summary>
         /// get - This is thread safe.
         /// </summary>
@@ -47,6 +63,7 @@ namespace Fosol.Diagnostics.Listeners
         public ConsoleListener(bool useErrorStream)
             : base(useErrorStream ? Console.Error : Console.Out)
         {
+            this.UseErrorStream = useErrorStream;
         }
         #endregion
 

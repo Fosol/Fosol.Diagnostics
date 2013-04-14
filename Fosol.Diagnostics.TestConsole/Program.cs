@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics.TestConsole
 {
@@ -10,7 +11,13 @@ namespace Fosol.Diagnostics.TestConsole
         static void Main(string[] args)
         {
             var log = Fosol.Diagnostics.LogManager.GetWriter();
-            log.Info(1, "information");
+
+            var value = 0;
+            while (true)
+            {
+                log.Info(value++, "information");
+                Thread.Sleep(1000);
+            }
 
             Console.ReadKey();
 

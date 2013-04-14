@@ -18,6 +18,7 @@ namespace Fosol.Diagnostics
         #region Variables
         private readonly LogWriterCache _Writers = new LogWriterCache();
         private readonly string _ApplicationName;
+        private readonly static TraceConfigurationMonitor _Monitor = new TraceConfigurationMonitor();
         #endregion
 
         #region Properties
@@ -34,6 +35,7 @@ namespace Fosol.Diagnostics
         public LogFactory()
         {
             _ApplicationName = GetApplicationName();
+            _Monitor.Start();
         }
         #endregion
 

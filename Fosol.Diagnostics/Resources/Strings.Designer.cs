@@ -70,6 +70,15 @@ namespace Fosol.Diagnostics.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The configuration &quot;{0}&quot; attribute is required..
+        /// </summary>
+        internal static string Exception_Configuration_AttributeRequired {
+            get {
+                return ResourceManager.GetString("Exception_Configuration_AttributeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The &quot;{0}&quot; keyword does not exist..
         /// </summary>
         internal static string Exception_Configuration_KeywordDoesNotExist {

@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigFileWatcher.cs" />
+    <Compile Include="Converters\LogFormatConverter.cs" />
     <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
     <Compile Include="Keywords\AppDomainKeyword.cs" />
     <Compile Include="Keywords\CallStackKeyword.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Keywords\TraceKeywordBase.cs" />
     <Compile Include="Keywords\UserKeyword.cs" />
     <Compile Include="Keywords\WindowsIdentityKeyword.cs" />
+    <Compile Include="Listeners\ColoredConsoleListener.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
     <Compile Include="Listeners\TextWriterListener.cs" />
     <Compile Include="Listeners\TraceListenerPropertyAttribute.cs" />
@@ -94,6 +96,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="TraceConfigurationMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Extensions.Events;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,6 +18,9 @@ namespace Fosol.Diagnostics
     {
         #region Variables
         private FileSystemWatcher _Watcher;
+        public EventHandler<FileSystemEventArgs> ConfigCreated;
+        public EventHandler<FileSystemEventArgs> ConfigChanged;
+        public EventHandler<FileSystemEventArgs> ConfigDeleted;
         #endregion
 
         #region Properties
@@ -62,7 +66,9 @@ namespace Fosol.Diagnostics
             var fileName = Path.GetFileName(configFilePath);
 
             _Watcher = new FileSystemWatcher(path, fileName);
-            _Watcher.Changed += watcher_Changed;
+            _Watcher.Changed += OnConfigChanged;
+            _Watcher.Created += OnConfigCreated;
+            _Watcher.Deleted += OnConfigDeleted;
             _Watcher.EnableRaisingEvents = isEnabled;
         }
         #endregion
@@ -95,6 +101,14 @@ namespace Fosol.Diagnostics
             }
             GC.SuppressFinalize(this);
         }
+
+        public static void RefreshAll()
+        {
+            var source = typeof(TraceSource);
+
+            var method = source.GetMethod("RefreshAll", BindingFlags.NonPublic | BindingFlags.Static);
+            method.Invoke(null, null);
+        }
         #endregion
 
         #region Operators
@@ -107,7 +121,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void watcher_Changed(object sender, FileSystemEventArgs e)
+        private void OnConfigChanged(object sender, FileSystemEventArgs e)
         {
             int retry_count = 0;
             while (retry_count < 3)
@@ -115,6 +129,7 @@ namespace Fosol.Diagnostics
                 try
                 {
                     Trace.Refresh();
+                    RefreshAll();
                     break;
                 }
                 catch (Exception ex)
@@ -130,6 +145,17 @@ namespace Fosol.Diagnostics
                     Thread.Sleep(1);
                 }
             }
+            this.ConfigChanged.Raise(sender, e);
+        }
+
+        private void OnConfigCreated(object sender, FileSystemEventArgs e)
+        {
+            this.ConfigCreated.Raise(sender, e);
+        }
+
+        private void OnConfigDeleted(object sender, FileSystemEventArgs e)
+        {
+            this.ConfigDeleted.Raise(sender, e);
         }
         #endregion
     }

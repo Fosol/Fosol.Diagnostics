@@ -46,19 +46,26 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Write the message to the TraceSource.
         /// </summary>
-        /// <param name="level"></param>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="level">TraceEventType value.</param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Write(System.Diagnostics.TraceEventType level, int id, string message)
         {
-            this.Source.TraceEvent(level, id, message);
+            try
+            {
+                this.Source.TraceEvent(level, id, message);
+            }
+            catch (Exception)
+            {
+                // For now we want to ignore exceptions that occur while logging.
+            }
         }
 
         /// <summary>
         /// Write a verbose message to the TraceSource.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Verbose(int id, string message)
         {
             Write(TraceEventType.Verbose, id, message);
@@ -67,8 +74,8 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Write an information message to the TraceSource.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Info(int id, string message)
         {
             Write(TraceEventType.Information, id, message);
@@ -77,8 +84,8 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Write a warning message to the TraceSource.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Warn(int id, string message)
         {
             Write(TraceEventType.Warning, id, message);
@@ -87,8 +94,8 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Write an error message to the TraceSource.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Error(int id, string message)
         {
             Write(TraceEventType.Error, id, message);
@@ -97,8 +104,8 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Write a critical message to the TraceSource.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
+        /// <param name="id">Id to identify the trace event.</param>
+        /// <param name="message">Message to describe trace event.</param>
         public void Critical(int id, string message)
         {
             Write(TraceEventType.Critical, id, message);

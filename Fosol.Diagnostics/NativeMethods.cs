@@ -23,6 +23,10 @@ namespace Fosol.Diagnostics
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern int GetModuleFileName(HandleRef hModule, StringBuilder buffer, int length);
+
+        // Microsoft.Win32.SafeNativeMethods
+        [DllImport("kernel32.dll", BestFitMapping = true, CharSet = CharSet.Auto)]
+        public static extern void OutputDebugString(string message);
         #endregion
 
         #region Operators

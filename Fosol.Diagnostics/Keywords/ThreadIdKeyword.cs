@@ -54,7 +54,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>A message.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             var builder = new StringBuilder(logEvent.EventCache.ThreadId);
 

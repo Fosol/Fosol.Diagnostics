@@ -72,7 +72,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>Thread identity information (name and authentication information).</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             var principal = System.Threading.Thread.CurrentPrincipal;
 

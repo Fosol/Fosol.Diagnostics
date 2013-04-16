@@ -62,7 +62,7 @@ namespace Fosol.Diagnostics.Converters
         {
             if (value.GetType() == typeof(string))
             {
-                return new LogFormat((string)value);
+                return new TraceFormat((string)value);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -79,9 +79,9 @@ namespace Fosol.Diagnostics.Converters
         {
             if (destinationType == typeof(string))
             {
-                if (value.GetType() == typeof(LogFormat))
+                if (value.GetType() == typeof(TraceFormat))
                 {
-                    var val = value as LogFormat;
+                    var val = value as TraceFormat;
                     return val.ToString();
                 }
             }

@@ -5,20 +5,26 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics
 {
     /// <summary>
     /// Provides a central class to initialize LogWriter objects.
     /// </summary>
-    public sealed class LogManager
+    public sealed class TraceManager
         : IDisposable
     {
         #region Variables
-        private static readonly LogFactory _Factory = new LogFactory();
+        private static readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
+        private static readonly TraceFactory _Factory = new TraceFactory();
         #endregion
 
         #region Properties
+        internal static TraceFactory Factory
+        {
+            get { return _Factory; }
+        }
         #endregion
 
         #region Constructors
@@ -29,7 +35,7 @@ namespace Fosol.Diagnostics
         /// Get the default LogWriter for the application.
         /// </summary>
         /// <returns>LogWriter object.</returns>
-        public static LogWriter GetWriter()
+        public static TraceWriter GetWriter()
         {
             return _Factory.GetWriter();
         }
@@ -39,7 +45,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="name">The unique name to identify the LogWriter source.</param>
         /// <returns>LogWriter object.</returns>
-        public static LogWriter GetWriter(string name)
+        public static TraceWriter GetWriter(string name)
         {
             return _Factory.GetWriter(name);
         }

@@ -37,7 +37,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent containing information for Keyword.</param>
         /// <returns>The dynamic value of the keyword.</returns>
-        public abstract string Render(LogEvent logEvent);
+        public abstract string Render(TraceEvent logEvent);
         #endregion
 
         #region Operators

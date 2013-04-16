@@ -37,7 +37,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>Thread name.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             return Thread.CurrentThread.Name;
         }

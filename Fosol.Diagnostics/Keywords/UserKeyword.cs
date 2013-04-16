@@ -28,7 +28,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>The username currently logged in.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             return Environment.UserDomainName + "\\" + Environment.UserName;
         }

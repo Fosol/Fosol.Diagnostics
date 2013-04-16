@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Keywords
+namespace Fosol.Diagnostics.Configuration
 {
-    internal interface IDynamicKeyword
-        : ITraceKeyword
+    [ConfigurationCollection(typeof(ListenerElement))]
+    internal class ListenerElementCollection
+        : Fosol.Common.Configuration.ConfigurationElementCollection<ListenerElement>
     {
         #region Variables
         #endregion
@@ -19,7 +20,7 @@ namespace Fosol.Diagnostics.Keywords
         #endregion
 
         #region Methods
-        string Render(TraceEvent logEvent);
+
         #endregion
 
         #region Operators

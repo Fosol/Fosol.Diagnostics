@@ -1,19 +1,23 @@
-﻿using System;
+﻿using Fosol.Diagnostics.Listeners;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Listeners
+namespace Fosol.Diagnostics
 {
     /// <summary>
     /// Abstract class for all extended Trace Listener objects.
     /// </summary>
-    public abstract class TraceListenerBase
-        : TraceListener
+    public abstract class TraceListener
+        : IDisposable
     {
         #region Variables
         protected readonly ReaderWriterLockSlim _LockSlim = new ReaderWriterLockSlim();
@@ -21,8 +25,9 @@ namespace Fosol.Diagnostics.Listeners
         private readonly string[] _SupportedAttributes;
         private bool _IsInitialized;
         private bool _IsInitializing;
-        private LogFormat _Format;
-        private bool _UseWriteLine;
+        private TraceFormat _Format;
+        private volatile TraceFilter _Filter;
+        private StringDictionary _Attributes;
         #endregion
 
         #region Properties
@@ -44,12 +49,16 @@ namespace Fosol.Diagnostics.Listeners
             set { SetValue(ref _IsInitializing, value); }
         }
 
+        public string InitializeData { get; set; }
+
+        public string Name { get; set; }
+
         /// <summary>
         /// get - Message string format.
         /// </summary>
         [DefaultValue(_DefaultFormat)]
         [TraceListenerProperty("format", typeof(Converters.LogFormatConverter))]
-        public LogFormat Format
+        public TraceFormat Format
         {
             get
             {
@@ -61,21 +70,20 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
-        /// <summary>
-        /// get - Whether the listener should by default use the WriteLine method instead of the Write method.
-        /// By default it will use the Write method.
-        /// </summary>
-        [TraceListenerProperty("useWriteLine")]
-        public bool UseWriteLine
+        public TraceFilter Filter
         {
-            get
-            {
-                return GetValue(ref _UseWriteLine);
-            }
-            private set
-            {
-                SetValue(ref _UseWriteLine, value, "useWriteLine");
-            }
+            get { return _Filter; }
+            set { _Filter = value; }
+        }
+
+        public StringDictionary Attributes
+        {
+            get { return _Attributes; }
+        }
+
+        public virtual bool IsThreadSafe
+        {
+            get { return false; }
         }
         #endregion
 
@@ -83,9 +91,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// Initialize supported attributes.
         /// </summary>
-        public TraceListenerBase()
+        public TraceListener()
         {
-            _SupportedAttributes = TraceListenerBase.GetSupportedAttributes(this.GetType());
+            _SupportedAttributes = TraceListener.GetSupportedAttributes(this.GetType());
         }
         #endregion
 
@@ -95,7 +103,7 @@ namespace Fosol.Diagnostics.Listeners
         /// </summary>
         /// <param name="type">Type of listener.</param>
         /// <returns>An array of supported attributes.</returns>
-        protected static string[] GetSupportedAttributes(Type type)
+        public static string[] GetSupportedAttributes(Type type)
         {
             var properties = (
                 from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -215,132 +223,50 @@ namespace Fosol.Diagnostics.Listeners
         /// The supported attributes are dynamically generated based on the usage of the TraceListenerPropertyAttribute.
         /// </summary>
         /// <returns>An array of supported attributes.</returns>
-        protected internal override string[] GetSupportedAttributes()
+        protected string[] GetSupportedAttributes()
         {
             return _SupportedAttributes;
         }
 
-        /// <summary>
-        /// All Trace*() methods send the trace event to this method.
-        /// </summary>
-        /// <param name="logEvent"></param>
-        protected virtual void WriteTrace(LogEvent logEvent)
-        {
-            // By default all trace events are sent to the Write() method.
-            // This allows the format string to control the layout.
-            if (!this.UseWriteLine)
-                Write(this.Format.Render(logEvent));
-            else
-                WriteLine(this.Format.Render(logEvent));
-        }
+        public abstract void Write(string trace);
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="eventType"></param>
-        /// <param name="id"></param>
-        /// <param name="data"></param>
-        public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, object data)
+        public virtual void Write(TraceEvent trace)
         {
-            if (Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, null, null, data, null))
+            if (this.Filter != null && !this.Filter.ShouldTrace(trace))
                 return;
 
-            // It is annoying for this to be here, but it's the only way to ensure it's called.
-            InternalIntialize();
-            WriteTrace(new LogEvent(eventCache, source, eventType, id, data));
+            Write(this.Format.Render(trace));
         }
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="eventType"></param>
-        /// <param name="id"></param>
-        /// <param name="data"></param>
-        public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, params object[] data)
+        public virtual void Close()
         {
-            if (Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, null, null, null, data))
-                return;
 
-            // It is annoying for this to be here, but it's the only way to ensure it's called.
-            InternalIntialize();
-            WriteTrace(new LogEvent(eventCache, source, eventType, id, data));
         }
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="eventType"></param>
-        /// <param name="id"></param>
-        public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id)
+        public virtual void Flush()
         {
-            if (Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, null, null, null, null))
-                return;
 
-            // It is annoying for this to be here, but it's the only way to ensure it's called.
-            InternalIntialize();
-            WriteTrace(new LogEvent(eventCache, source, eventType, id));
         }
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="eventType"></param>
-        /// <param name="id"></param>
-        /// <param name="format"></param>
-        /// <param name="args"></param>
-        public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
+        public virtual void Dispose()
         {
-            if (Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, format, args, null, null))
-                return;
-
-            // It is annoying for this to be here, but it's the only way to ensure it's called.
-            InternalIntialize();
-            WriteTrace(new LogEvent(eventCache, source, eventType, id, format, args));
         }
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="eventType"></param>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
-        public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
+        internal void SetAttributes(System.Collections.Hashtable attribs)
         {
-            if (Filter != null && !Filter.ShouldTrace(eventCache, source, eventType, id, message, null, null, null))
-                return;
-
-            // It is annoying for this to be here, but it's the only way to ensure it's called.
-            InternalIntialize();
-            WriteTrace(new LogEvent(eventCache, source, eventType, id, message));
+            TraceListener.VerifyAttributes(this.Attributes, GetSupportedAttributes());
+            _Attributes = new StringDictionary();
+            this.Attributes.ReplaceHashtable(attribs);
         }
 
-        /// <summary>
-        /// Repackages and sends a LogEvent to the WriteTrace() method.
-        /// Override the TraceWrite() method if you need to do something specific to the message other than format it.
-        /// </summary>
-        /// <param name="eventCache"></param>
-        /// <param name="source"></param>
-        /// <param name="id"></param>
-        /// <param name="message"></param>
-        /// <param name="relatedActivityId"></param>
-        public override void TraceTransfer(TraceEventCache eventCache, string source, int id, string message, Guid relatedActivityId)
+        static void VerifyAttributes(IDictionary attributes, string[] supportedAttributes)
         {
-            base.TraceTransfer(eventCache, source, id, message, relatedActivityId);
+            foreach (var text in attributes.Keys)
+            {
+                if (supportedAttributes == null
+                    || supportedAttributes.Contains(text))
+                    throw new ConfigurationErrorsException();
+            }
         }
         #endregion
 

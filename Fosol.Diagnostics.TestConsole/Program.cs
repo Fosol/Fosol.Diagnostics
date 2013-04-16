@@ -10,7 +10,7 @@ namespace Fosol.Diagnostics.TestConsole
     {
         static void Main(string[] args)
         {
-            var log = Fosol.Diagnostics.LogManager.GetWriter();
+            var log = Fosol.Diagnostics.TraceManager.GetWriter();
 
             var value = 0;
             while (true)

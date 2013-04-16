@@ -11,7 +11,7 @@ namespace Fosol.Diagnostics.Listeners
     /// Directs trace events to the stream specified.
     /// </summary>
     public class TextWriterListener
-        : TraceListenerBase
+        : TraceListener
     {
         #region Variables
         private TextWriter _Writer;
@@ -61,66 +61,21 @@ namespace Fosol.Diagnostics.Listeners
             _Writer = null;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose()
         {
-            try
-            {
-                if (disposing)
-                    this.Close();
-                else
-                {
-                    if (_Writer != null)
-                    {
-                        try
-                        {
-                            _Writer.Close();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                        }
-                    }
-                    _Writer = null;
-                }
-            }
-            finally
-            {
-                base.Dispose(disposing);
-            }
+            if (_Writer != null)
+                _Writer.Close();
+            _Writer = null;
         }
 
         public override void Flush()
         {
-            try
-            {
-                _Writer.Flush();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
+            _Writer.Flush();
         }
 
-        public override void Write(string message)
+        public override void Write(string trace)
         {
-            if (NeedIndent) WriteIndent();
-            try
-            {
-                _Writer.Write(message);
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-        }
-
-        public override void WriteLine(string message)
-        {
-            if (NeedIndent) WriteIndent();
-            try
-            {
-                _Writer.WriteLine(message);
-            }
-            catch (ObjectDisposedException)
-            {
-            }
+            _Writer.Write(trace);
         }
 
         private static Encoding GetEncodingWithFallback(Encoding encoding)

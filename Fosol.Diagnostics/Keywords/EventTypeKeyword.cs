@@ -55,7 +55,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>Log event type for the trace event.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             if (this.ToLower)
                 return logEvent.EventType.ToString(this.Format).ToLower();

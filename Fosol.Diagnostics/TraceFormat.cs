@@ -10,7 +10,7 @@ namespace Fosol.Diagnostics
     /// <summary>
     /// Provides a way to create a dynamic message output to any given LogTarget.
     /// </summary>
-    public sealed class LogFormat
+    public sealed class TraceFormat
         : IDisposable
     {
         #region Variables
@@ -28,10 +28,10 @@ namespace Fosol.Diagnostics
         /// Creates a new instance of a LogFormat object.
         /// </summary>
         /// <param name="format">Formatted string value containing keywords.</param>
-        public LogFormat(string format)
+        public TraceFormat(string format)
         {
             _Format = format;
-            var keywords = LogFormat.Compile(format);
+            var keywords = TraceFormat.Compile(format);
 
             foreach (var key in keywords)
             {
@@ -46,7 +46,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>Dynamicly generated text.</returns>
-        public string Render(LogEvent logEvent)
+        public string Render(TraceEvent logEvent)
         {
             var builder = new StringBuilder();
 
@@ -71,7 +71,7 @@ namespace Fosol.Diagnostics
         /// <returns>Collection of Keywords.</returns>
         private static IEnumerable<Keywords.TraceKeywordBase> Compile(string format)
         {
-            return LogFormat.Compile(LogFormat._Parser, format);
+            return TraceFormat.Compile(TraceFormat._Parser, format);
         }
 
         /// <summary>

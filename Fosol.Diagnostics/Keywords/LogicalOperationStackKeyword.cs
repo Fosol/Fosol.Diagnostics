@@ -42,7 +42,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="logEvent">LogEvent object.</param>
         /// <returns>The trace event call stack.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             if (logEvent.EventCache.LogicalOperationStack != null && logEvent.EventCache.LogicalOperationStack.Count > 0)
             {

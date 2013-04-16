@@ -37,7 +37,7 @@ namespace Fosol.Diagnostics.Keywords
         /// </summary>
         /// <param name="message">LogMessage object.</param>
         /// <returns>The Ticks value of the current date and time.</returns>
-        public override string Render(LogEvent logEvent)
+        public override string Render(TraceEvent logEvent)
         {
             return DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
         }

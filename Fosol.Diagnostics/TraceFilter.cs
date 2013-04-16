@@ -4,22 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Keywords
+namespace Fosol.Diagnostics
 {
-    internal interface IDynamicKeyword
-        : ITraceKeyword
+    public class TraceFilter
     {
         #region Variables
         #endregion
 
         #region Properties
+
+        public string InitializeData { get; set; }
         #endregion
 
         #region Constructors
         #endregion
 
         #region Methods
-        string Render(TraceEvent logEvent);
+        public bool ShouldTrace(TraceEvent trace)
+        {
+            return true;
+        }
         #endregion
 
         #region Operators

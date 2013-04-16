@@ -11,7 +11,7 @@ namespace Fosol.Diagnostics
     /// Cache for LogWriter objects.
     /// The purpose is so that new instances of LogWriter are not created when they don't need to be.
     /// </summary>
-    internal class LogWriterCache
+    internal class TraceWriterCache
         : IDisposable
     {
         #region Variables
@@ -33,7 +33,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="key">Cache key name.</param>
         /// <returns>LogWriter if it exists.</returns>
-        public LogWriter this[string key]
+        public TraceWriter this[string key]
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="key">Cache key value to identify LogWriter.</param>
         /// <param name="value">LogWriter object to add to cache.</param>
-        public void Add(string key, LogWriter value)
+        public void Add(string key, TraceWriter value)
         {
             _LockSlim.EnterWriteLock();
             try
@@ -77,12 +77,12 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="key">Cache key value to identify LogWriter.</param>
         /// <returns>LogWriter object if found.</returns>
-        public LogWriter Get(string key)
+        public TraceWriter Get(string key)
         {
             _LockSlim.EnterReadLock();
             try
             {
-                return _Cache[key].Target as LogWriter;
+                return _Cache[key].Target as TraceWriter;
             }
             finally
             {
@@ -141,7 +141,7 @@ namespace Fosol.Diagnostics
         /// <param name="key">Cache key name to identify the LogWriter.</param>
         /// <param name="value">LogWriter variable to propulate.</param>
         /// <returns>The LogWriter if it exists, or null.</returns>
-        public bool TryGetValue(string key, out LogWriter value)
+        public bool TryGetValue(string key, out TraceWriter value)
         {
             if (ContainsKey(key))
             {
@@ -157,7 +157,7 @@ namespace Fosol.Diagnostics
         /// Add a new LogWriter to the cache.
         /// </summary>
         /// <param name="item">KeyValuePair object with a LogWriter.</param>
-        public void Add(KeyValuePair<string, LogWriter> item)
+        public void Add(KeyValuePair<string, TraceWriter> item)
         {
             Add(item.Key, item.Value);
         }
@@ -183,7 +183,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="item">KeyValuePair with a LogWriter.</param>
         /// <returns>True if the cache contains the LogWriter.</returns>
-        public bool Contains(KeyValuePair<string, LogWriter> item)
+        public bool Contains(KeyValuePair<string, TraceWriter> item)
         {
             return _Cache.Contains(new KeyValuePair<string, WeakReference>(item.Key, new WeakReference(item.Value)));
         }
@@ -193,7 +193,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="item">KeyValuePair with LogWriter.</param>
         /// <returns>True if the LogWriter was removed.</returns>
-        public bool Remove(KeyValuePair<string, LogWriter> item)
+        public bool Remove(KeyValuePair<string, TraceWriter> item)
         {
             return Remove(item.Key);
         }

@@ -22,7 +22,7 @@ namespace Fosol.Diagnostics.Listeners
         private ConsoleColor _ErrorColor;
         private ConsoleColor _WarningColor;
         private ConsoleColor _InformationColor;
-        private ConsoleColor _VerboseColor;
+        private ConsoleColor _DebugColor;
         private ConsoleColor _StartColor;
         private ConsoleColor _StopColor;
         private ConsoleColor _SuspendColor;
@@ -89,13 +89,13 @@ namespace Fosol.Diagnostics.Listeners
         }
 
         /// <summary>
-        /// get/set - The foreground color for verbose event type messages.
+        /// get/set - The foreground color for debug event type messages.
         /// </summary>
-        [TraceListenerProperty("verboseColor", typeof(EnumConverter), typeof(ConsoleColor))]
-        public ConsoleColor VerboseColor
+        [TraceListenerProperty("debugColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        public ConsoleColor DebugColor
         {
-            get { return GetValue(ref _VerboseColor); }
-            set { SetValue(ref _VerboseColor, value, "verboseColor"); }
+            get { return GetValue(ref _DebugColor); }
+            set { SetValue(ref _DebugColor, value, "debugColor"); }
         }
 
         /// <summary>
@@ -206,30 +206,28 @@ namespace Fosol.Diagnostics.Listeners
                     return this.StopColor;
                 case (TraceEventType.Suspend):
                     return this.SuspendColor;
-                case (TraceEventType.Transfer):
-                    return this.TransferColor;
                 case (TraceEventType.Warning):
                     return this.WarningColor;
-                case (TraceEventType.Verbose):
+                case (TraceEventType.Debug):
                 default:
-                    return this.VerboseColor;
+                    return this.DebugColor;
             }
         }
 
         /// <summary>
         /// Change the foreground color of the Console.
         /// </summary>
-        /// <param name="logEvent">LogEvent object.</param>
-        protected override void WriteTrace(LogEvent logEvent)
+        /// <param name="traceEvent">TraceEvent object.</param>
+        public override void Write(TraceEvent traceEvent)
         {
             var current_color = Console.ForegroundColor;
 
             if (!this.UseErrorStream)
             {
-                Console.ForegroundColor = GetForegroundColor(logEvent.EventType);
+                Console.ForegroundColor = GetForegroundColor(traceEvent.EventType);
             }
 
-            base.WriteTrace(logEvent);
+            base.Write(traceEvent);
 
             if (!this.UseErrorStream)
             {

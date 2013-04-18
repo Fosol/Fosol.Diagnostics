@@ -12,16 +12,7 @@ namespace Fosol.Diagnostics.TestConsole
         {
             var log = Fosol.Diagnostics.TraceManager.GetWriter();
 
-            var value = 0;
-            while (true)
-            {
-                log.Info(value++, "information");
-                Thread.Sleep(1000);
-            }
-
             Console.ReadKey();
-
-            log.Flush();
         }
     }
 }

@@ -61,65 +61,65 @@ namespace Fosol.Diagnostics.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assembly &quot;{0}&quot; is invalid..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; configuration argument &quot;{1}&quot; failed to convert to type &quot;{2}&quot;..
         /// </summary>
-        internal static string Exception_AssemblyIsInvalid {
+        internal static string Configuration_Exception_Argument_Conversion_Failed {
             get {
-                return ResourceManager.GetString("Exception_AssemblyIsInvalid", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Argument_Conversion_Failed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The configuration &quot;{0}&quot; attribute is required..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; configuration argument &quot;{1}&quot; has an invalid converter type &quot;{2}&quot;..
         /// </summary>
-        internal static string Exception_Configuration_AttributeRequired {
+        internal static string Configuration_Exception_Argument_Converter_Invalid {
             get {
-                return ResourceManager.GetString("Exception_Configuration_AttributeRequired", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Argument_Converter_Invalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &quot;{0}&quot; keyword does not exist..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; configuration argument &quot;{1}&quot; has an invalid type &quot;{2}&quot;..
         /// </summary>
-        internal static string Exception_Configuration_KeywordDoesNotExist {
+        internal static string Configuration_Exception_Argument_Type_Invalid {
             get {
-                return ResourceManager.GetString("Exception_Configuration_KeywordDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Argument_Type_Invalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The keyword in the configuration &quot;{0}&quot; is invalid..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter argumetns are invalid..
         /// </summary>
-        internal static string Exception_ConfigurationKeywordIsNotValid {
+        internal static string Configuration_Exception_Filter_Arguments_Invalid {
             get {
-                return ResourceManager.GetString("Exception_ConfigurationKeywordIsNotValid", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Filter_Arguments_Invalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A keyword with the name &quot;{0}&quot; already exists..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; listener arguments are invalid..
         /// </summary>
-        internal static string Exception_KeywordAlreadyExists {
+        internal static string Configuration_Exception_Listener_Arguments_Invalid {
             get {
-                return ResourceManager.GetString("Exception_KeywordAlreadyExists", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Listener_Arguments_Invalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &quot;{0}&quot; keyword attribute &quot;{1}&quot; is required..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; listener reference cannot include additional properties..
         /// </summary>
-        internal static string Exception_KeywordAttributeRequired {
+        internal static string Configuration_Exception_Listener_Reference_Invalid_Properties {
             get {
-                return ResourceManager.GetString("Exception_KeywordAttributeRequired", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Listener_Reference_Invalid_Properties", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This keyword &quot;{0}&quot; does not exist..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; listener reference must point to an existing shared listener..
         /// </summary>
-        internal static string Exception_KeywordDoesNotExist {
+        internal static string Configuration_Exception_Listener_Reference_Must_Exist {
             get {
-                return ResourceManager.GetString("Exception_KeywordDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Listener_Reference_Must_Exist", resourceCulture);
             }
         }
     }

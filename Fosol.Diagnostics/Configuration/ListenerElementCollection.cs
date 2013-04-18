@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
-    [ConfigurationCollection(typeof(ListenerElement))]
+    [ConfigurationCollection(typeof(ListenerElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
     internal class ListenerElementCollection
         : Fosol.Common.Configuration.ConfigurationElementCollection<ListenerElement>
     {

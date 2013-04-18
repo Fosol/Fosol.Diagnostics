@@ -6,24 +6,19 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics
 {
-    public class TraceFilter
+    public abstract class TraceFilter
     {
         #region Variables
         #endregion
 
         #region Properties
-
-        public string InitializeData { get; set; }
         #endregion
 
         #region Constructors
         #endregion
 
         #region Methods
-        public bool ShouldTrace(TraceEvent trace)
-        {
-            return true;
-        }
+        public bool ShouldTrace(TraceEvent traceEvent);
         #endregion
 
         #region Operators

@@ -1,77 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading;
 
 namespace Fosol.Diagnostics
 {
-    /// <summary>
-    /// Provides a central class to initialize LogWriter objects.
-    /// </summary>
-    public sealed class TraceManager
+    public class TraceManager
         : IDisposable
     {
         #region Variables
-        private static readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
-        private static readonly TraceFactory _Factory = new TraceFactory();
+        private static TraceManager _Manager;
+        private static Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
+        private Configuration.ListenerElementCollection _SharedListeners;
+        private Configuration.SourceElementCollection _Sources;
+        private Configuration.TraceElement _Trace;
         #endregion
 
         #region Properties
-        internal static TraceFactory Factory
+        internal static TraceManager Manager
         {
-            get { return _Factory; }
+            get { return _Manager; }
+        }
+
+        internal static Configuration.DiagnosticsSection Config
+        {
+            get { return _ConfigWatcher != null ? _ConfigWatcher.ConfigSection : null; }
+        }
+
+        internal Configuration.ListenerElementCollection SharedListeners
+        {
+            get { return _SharedListeners; }
+        }
+
+        internal Configuration.SourceElementCollection Sources
+        {
+            get { return _Sources; }
+        }
+
+        internal Configuration.TraceElement Trace
+        {
+            get 
+            {
+                if (_Trace == null)
+                    InitializeTrace();
+                return _Trace; 
+            }
         }
         #endregion
 
         #region Constructors
+        static TraceManager()
+        {
+            _Manager = new TraceManager();
+            _ConfigWatcher = new Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
+            _ConfigWatcher.Start();
+        }
+
+        internal TraceManager()
+        {
+            if (TraceManager.Config != null)
+            {
+                // Reference the configuration collection.
+                _SharedListeners = TraceManager.Config.SharedListeners;
+                _Sources = TraceManager.Config.Sources;
+                _Trace = TraceManager.Config.Trace;
+            }
+        }
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Get the default LogWriter for the application.
-        /// </summary>
-        /// <returns>LogWriter object.</returns>
-        public static TraceWriter GetWriter()
+        private void InitializeTrace()
         {
-            return _Factory.GetWriter();
+            _Trace = new Configuration.TraceElement();
         }
 
-        /// <summary>
-        /// Get a specific LogWriter (or create one).
-        /// </summary>
-        /// <param name="name">The unique name to identify the LogWriter source.</param>
-        /// <returns>LogWriter object.</returns>
-        public static TraceWriter GetWriter(string name)
-        {
-            return _Factory.GetWriter(name);
-        }
-
-        /// <summary>
-        /// Close all LogWriter objects.
-        /// </summary>
-        public void Close()
-        {
-            _Factory.Close();
-        }
-
-        /// <summary>
-        /// Flush all LogWriter objects.
-        /// </summary>
-        public void Flush()
-        {
-            _Factory.Flush();
-        }
-
-        /// <summary>
-        /// Dispose all LogWriter objects.
-        /// </summary>
         public void Dispose()
         {
-            _Factory.Dispose();
+            _ConfigWatcher.Dispose();
+        }
+
+        public static TraceWriter GetWriter()
+        {
+            return new TraceWriter();
+        }
+
+        public static TraceWriter GetWriter(string source)
+        {
+            return new TraceWriter(source);
         }
         #endregion
 

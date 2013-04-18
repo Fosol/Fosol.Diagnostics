@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="Fosol"
+    targetNamespace="http://diagnostics.fosol.ca/Fosol.Diagnostics.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://diagnostics.fosol.ca/Fosol.Diagnostics.xsd"
+    xmlns:mstns="http://diagnostics.fosol.ca/Fosol.Diagnostics.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <xs:element name="fosol.diagnostics">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:choice>
+          <xs:element name="Filters" type="filters"/>
+          <xs:element name="sharedListeners" type="listeners"/>
+          <xs:element name="sources" type="sources"/>
+          <xs:element name="trace" type="trace"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="listeners">
+    <xs:choice minOccurs="0">
+      <xs:element name="add" type="addListener"/>
+      <xs:element name="clear"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="addListener">
+    <xs:sequence minOccurs="0" maxOccurs="2">
+      <xs:choice>
+        <xs:element name="args" type="args" maxOccurs="1"/>
+        <xs:element name="filter" type="addFilter" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="args">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="add" type="addArgs"/>
+      <xs:element name="clear"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="addArgs">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="converter" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="filters">
+    <xs:choice minOccurs="0">
+      <xs:element name="add" type="addFilter"/>
+      <xs:element name="clear"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="addFilter">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="args" type="args"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="sources">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="add" type="addSource"/>
+      <xs:element name="clear"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="addSource">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="listeners" type="listeners"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="trace">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="listeners" type="listeners"/>
+    </xs:sequence>
+    <xs:attribute name="autoFlush" type="xs:boolean"/>
+    <xs:attribute name="autoRefresh" type="xs:boolean"/>
+  </xs:complexType>
+</xs:schema>

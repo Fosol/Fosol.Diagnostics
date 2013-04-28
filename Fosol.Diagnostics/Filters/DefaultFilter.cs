@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Configuration
+namespace Fosol.Diagnostics.Filters
 {
-    [ConfigurationCollection(typeof(ArgumentElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
-    internal class ArgumentElementCollection
-        : Fosol.Common.Configuration.ConfigurationElementCollection<ArgumentElement>
+    public sealed class DefaultFilter
+        : TraceFilter
     {
         #region Variables
         #endregion
@@ -21,6 +19,10 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
+        public override bool ShouldTrace(TraceEvent traceEvent)
+        {
+            return true;
+        }
         #endregion
 
         #region Operators

@@ -12,8 +12,6 @@ namespace Fosol.Diagnostics.Configuration
         #region Variables
         private const string NameKey = "name";
         private const string ValueKey = "value";
-        private const string TypeNameKey = "type";
-        private const string ConverterTypeNameKey = "converter";
         #endregion
 
         #region Properties
@@ -24,25 +22,11 @@ namespace Fosol.Diagnostics.Configuration
             set { base[NameKey] = value; }
         }
 
-        [ConfigurationProperty(ValueKey, IsRequired = true, IsKey = true)]
+        [ConfigurationProperty(ValueKey, IsRequired = true)]
         public string Value
         {
             get { return (string)base[ValueKey]; }
             set { base[ValueKey] = value; }
-        }
-
-        [ConfigurationProperty(TypeNameKey)]
-        public string TypeName
-        {
-            get { return (string)base[TypeNameKey]; }
-            set { base[TypeNameKey] = value; }
-        }
-
-        [ConfigurationProperty(ConverterTypeNameKey)]
-        public string ConverterName
-        {
-            get { return (string)base[ConverterTypeNameKey]; }
-            set { base[ConverterTypeNameKey] = value; }
         }
         #endregion
 

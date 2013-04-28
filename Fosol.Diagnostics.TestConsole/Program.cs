@@ -11,6 +11,7 @@ namespace Fosol.Diagnostics.TestConsole
         static void Main(string[] args)
         {
             var log = Fosol.Diagnostics.TraceManager.GetWriter();
+            log.Write(TraceEventType.Debug, "test");
 
             Console.ReadKey();
         }

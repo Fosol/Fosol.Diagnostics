@@ -12,7 +12,8 @@ namespace Fosol.Diagnostics.Configuration
         #region Variables
         private const string NameKey = "name";
         private const string TypeNameKey = "type";
-        private const string ArgsKey = "args";
+        private const string InitializeKey = "initialize";
+        private const string PropertiesKey = "properties";
         private const string FilterKey = "filter";
         private TraceListener _Listener;
         #endregion
@@ -32,14 +33,21 @@ namespace Fosol.Diagnostics.Configuration
             set { base[TypeNameKey] = value; }
         }
 
-        [ConfigurationProperty(ArgsKey)]
-        public ArgumentElementCollection Args
+        [ConfigurationProperty(InitializeKey)]
+        public ArgumentElementCollection Initialize
         {
-            get { return (ArgumentElementCollection)base[ArgsKey]; }
-            set { base[ArgsKey] = value; }
+            get { return (ArgumentElementCollection)base[InitializeKey]; }
+            set { base[InitializeKey] = value; }
         }
 
-        [ConfigurationProperty(FilterKey)]
+        [ConfigurationProperty(PropertiesKey)]
+        public ArgumentElementCollection Properties
+        {
+            get { return (ArgumentElementCollection)base[PropertiesKey]; }
+            set { base[PropertiesKey] = value; }
+        }
+
+        [ConfigurationProperty(FilterKey, DefaultValue = null)]
         public FilterElement Filter
         {
             get { return (FilterElement)base[FilterKey]; }
@@ -56,14 +64,22 @@ namespace Fosol.Diagnostics.Configuration
             if (_Listener != null)
                 return _Listener;
 
+            var name = this.Name;
             var type_name = this.TypeName;
-            var filter = this.Filter;
-            var args = this.Args;
+            var filter = (string.IsNullOrEmpty(this.Filter.Name) && string.IsNullOrEmpty(this.Filter.TypeName)) ? null : this.Filter;
+            var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
+            var properties = (this.Properties.Count == 0) ? null : this.Properties;
+
+            // Annoyingly an empty TraceListener is created even if one isn't configured.
+            // So check for this and exit.
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type_name))
+                return null;
+
             // This is a reference to a SharedListener, so confirm that it exists.
             if (string.IsNullOrEmpty(type_name))
             {
                 // When refrencing a SharedListener you cannot include other configuration options.
-                if (filter != null || args != null)
+                if (filter != null || initialize != null || properties != null)
                     throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Invalid_Properties, this.Name));
 
                 // The reference must exist in the shared listeners.
@@ -76,6 +92,7 @@ namespace Fosol.Diagnostics.Configuration
 
                 // Reference the shared listener.
                 _Listener = listener.GetListener();
+                _Listener.Initialize();
                 return _Listener;
             }
             // Try to create the listener as it has been defined in the configuration.
@@ -86,14 +103,16 @@ namespace Fosol.Diagnostics.Configuration
                     if (args != null && args.Count > 0)
                     {
                         // Initialize the listener with the arguments.
-                        var largs = this.Args.GetArguments(this.Name).Select(a => a.Value).ToArray();
-                        _Listener = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceListener>(type_name, largs);
+                        var largs = args.GetArguments(this.Name);
+                        _Listener = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceListener>(type_name, largs.Select(a => a.Value).ToArray());
+                        _Listener.Initialize(largs);
                         return _Listener;
                     }
                     else
                     {
                         // Initialize the listener without any arguments.
                         _Listener = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceListener>(type_name);
+                        _Listener.Initialize();
                         return _Listener;
                     }
                 }

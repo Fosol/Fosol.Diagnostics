@@ -11,7 +11,7 @@
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
-          <xs:element name="Filters" type="filters"/>
+          <xs:element name="filters" type="filters"/>
           <xs:element name="sharedListeners" type="listeners"/>
           <xs:element name="sources" type="sources"/>
           <xs:element name="trace" type="trace"/>
@@ -30,7 +30,8 @@
   <xs:complexType name="addListener">
     <xs:sequence minOccurs="0" maxOccurs="2">
       <xs:choice>
-        <xs:element name="args" type="args" maxOccurs="1"/>
+        <xs:element name="initialize" type="args" maxOccurs="1"/>
+        <xs:element name="properties" type="args" maxOccurs="1"/>
         <xs:element name="filter" type="addFilter" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
@@ -48,8 +49,6 @@
   <xs:complexType name="addArgs">
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="value" type="xs:string" use="required"/>
-    <xs:attribute name="type" type="xs:string"/>
-    <xs:attribute name="converter" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="filters">
@@ -60,8 +59,11 @@
   </xs:complexType>
 
   <xs:complexType name="addFilter">
-    <xs:sequence minOccurs="0" maxOccurs="1">
-      <xs:element name="args" type="args"/>
+    <xs:sequence minOccurs="0" maxOccurs="2">
+      <xs:choice>
+        <xs:element name="initialize" type="args" maxOccurs="1"/>
+        <xs:element name="properties" type="args" maxOccurs="1"/>
+      </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="type" type="xs:string"/>

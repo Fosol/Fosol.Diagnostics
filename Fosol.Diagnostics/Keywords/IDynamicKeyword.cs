@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics.Configuration
+namespace Fosol.Diagnostics.Keywords
 {
-    [ConfigurationCollection(typeof(ArgumentElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
-    internal class ArgumentElementCollection
-        : Fosol.Common.Configuration.ConfigurationElementCollection<ArgumentElement>
+    internal interface IDynamicKeyword
+        : ITraceKeyword
     {
         #region Variables
         #endregion
@@ -21,6 +19,7 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
+        string Render(TraceEvent traceEvent);
         #endregion
 
         #region Operators

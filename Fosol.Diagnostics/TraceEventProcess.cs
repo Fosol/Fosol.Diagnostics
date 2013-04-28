@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 
-namespace Fosol.Diagnostics.Configuration
+namespace Fosol.Diagnostics
 {
-    [ConfigurationCollection(typeof(ArgumentElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
-    internal class ArgumentElementCollection
-        : Fosol.Common.Configuration.ConfigurationElementCollection<ArgumentElement>
+    public class TraceEventProcess
     {
         #region Variables
+        private int _ProcessId;
         #endregion
 
         #region Properties
+        public int ProcessId
+        {
+            get { return _ProcessId; }
+        }
         #endregion
 
         #region Constructors
         #endregion
 
         #region Methods
+
         #endregion
 
         #region Operators

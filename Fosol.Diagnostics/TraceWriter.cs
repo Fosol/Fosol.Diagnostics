@@ -46,15 +46,19 @@ namespace Fosol.Diagnostics
         #endregion
 
         #region Methods
-        public void Write(string message)
+        public void Write(TraceEventType eventType, string message)
         {
             if (this.Listeners != null)
             {
-                var trace_event = new TraceEvent();
+                var trace_event = new TraceEvent(eventType, message);
 
-                foreach (var listener in this.Listeners)
+                foreach (var config in this.Listeners)
                 {
-                    if (listener.Filter.GetFilter()
+                    if (config.Filter.GetFilter().ShouldTrace(trace_event))
+                    {
+                        var listener = config.GetListener();
+                        listener.Write(trace_event);
+                    }
                 }
             }
         }

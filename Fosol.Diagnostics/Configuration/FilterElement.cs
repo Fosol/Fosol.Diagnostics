@@ -48,12 +48,17 @@ namespace Fosol.Diagnostics.Configuration
             if (_Filter != null)
                 return _Filter;
 
+            var name = this.Name;
             var type_name = this.TypeName;
             var args = this.Args;
 
+            // Use the default filter.
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type_name))
+                type_name = "Fosol.Diagnostics.Filters.DefaultFilter, Fosol.Diagnostics";
+
             try
             {
-                if (args != null && args.Count > 0)
+                if (args.Count > 0)
                 {
                     // Initialize the filter with the arguments.
                     var largs = args.GetArguments(this.Name).Select(a => a.Value).ToArray();

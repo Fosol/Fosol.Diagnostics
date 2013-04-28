@@ -51,9 +51,9 @@ namespace Fosol.Diagnostics
         #region Constructors
         static TraceManager()
         {
-            _Manager = new TraceManager();
             _ConfigWatcher = new Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
             _ConfigWatcher.Start();
+            _Manager = new TraceManager();
         }
 
         internal TraceManager()

@@ -43,10 +43,52 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\LogFormatConverter.cs" />
+    <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
+    <Compile Include="Filters\DefaultFilter.cs" />
+    <Compile Include="Keywords\AppDomainKeyword.cs" />
+    <Compile Include="Keywords\CallStackKeyword.cs" />
+    <Compile Include="Keywords\CounterKeyword.cs" />
+    <Compile Include="Keywords\DateTimeKeyword.cs" />
+    <Compile Include="Keywords\DynamicKeyword.cs" />
+    <Compile Include="Keywords\EventTypeKeyword.cs" />
+    <Compile Include="Keywords\GuidKeyword.cs" />
+    <Compile Include="Keywords\IdentityKeyword.cs" />
+    <Compile Include="Keywords\IdKeyword.cs" />
+    <Compile Include="Keywords\IDynamicKeyword.cs" />
+    <Compile Include="Keywords\IStaticKeyword.cs" />
+    <Compile Include="Keywords\ITraceKeyword.cs" />
+    <Compile Include="Keywords\KeywordLibrary.cs" />
+    <Compile Include="Keywords\LogicalOperationStackKeyword.cs" />
+    <Compile Include="Keywords\MachineNameKeyword.cs" />
+    <Compile Include="Keywords\MessageKeyword.cs" />
+    <Compile Include="Keywords\NewlineKeyword.cs" />
+    <Compile Include="Keywords\ProcessIdKeyword.cs" />
+    <Compile Include="Keywords\SourceKeyword.cs" />
+    <Compile Include="Keywords\StaticKeyword.cs" />
+    <Compile Include="Keywords\TextKeyword.cs" />
+    <Compile Include="Keywords\ThreadIdKeyword.cs" />
+    <Compile Include="Keywords\ThreadNameKeyword.cs" />
+    <Compile Include="Keywords\TicksKeyword.cs" />
+    <Compile Include="Keywords\TimestampKeyword.cs" />
+    <Compile Include="Keywords\TraceKeywordAttribute.cs" />
+    <Compile Include="Keywords\TraceKeyword.cs" />
+    <Compile Include="Keywords\TraceKeywordCache.cs" />
+    <Compile Include="Keywords\TraceKeywordPropertyAttribute.cs" />
+    <Compile Include="Keywords\UserKeyword.cs" />
+    <Compile Include="Keywords\WindowsIdentityKeyword.cs" />
+    <Compile Include="Listeners\ConsoleListener.cs" />
+    <Compile Include="Listeners\TextWriterListener.cs" />
     <Compile Include="TraceEvent.cs" />
+    <Compile Include="TraceEventProcess.cs" />
+    <Compile Include="TraceEventThread.cs" />
+    <Compile Include="TraceEventType.cs" />
     <Compile Include="TraceFilter.cs" />
+    <Compile Include="TraceFormat.cs" />
+    <Compile Include="TraceInitializeAttribute.cs" />
     <Compile Include="TraceListener.cs" />
     <Compile Include="TraceListenerCollection.cs" />
+    <Compile Include="TracePropertyAttribute.cs" />
     <Compile Include="TraceManager.cs" />
     <Compile Include="Configuration\ArgumentElement.cs" />
     <Compile Include="Configuration\ArgumentElementCollection.cs" />
@@ -72,10 +114,7 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-    <Folder Include="Listeners\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Fosol.Common\Fosol.Common\Fosol.Common.csproj">
       <Project>{61d8cac1-6f1b-48fc-b94c-0601f1ce78d5}</Project>

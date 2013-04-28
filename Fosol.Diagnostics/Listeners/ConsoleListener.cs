@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics
+namespace Fosol.Diagnostics.Listeners
 {
-    public abstract class TraceFilter
+    [TraceInitialize("useErrorStream", typeof(bool))]
+    public class ConsoleListener
+        : TextWriterListener
     {
         #region Variables
         #endregion
@@ -15,10 +17,20 @@ namespace Fosol.Diagnostics
         #endregion
 
         #region Constructors
+        public ConsoleListener()
+            : this(false)
+        {
+
+        }
+
+        public ConsoleListener(bool useErrorStream)
+            : base(useErrorStream ? Console.Error : Console.Out)
+        {
+
+        }
         #endregion
 
         #region Methods
-        public abstract bool ShouldTrace(TraceEvent traceEvent);
         #endregion
 
         #region Operators

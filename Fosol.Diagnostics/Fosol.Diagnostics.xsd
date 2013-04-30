@@ -31,7 +31,7 @@
     <xs:sequence minOccurs="0" maxOccurs="2">
       <xs:choice>
         <xs:element name="initialize" type="args" maxOccurs="1"/>
-        <xs:element name="properties" type="args" maxOccurs="1"/>
+        <xs:element name="settings" type="args" maxOccurs="1"/>
         <xs:element name="filter" type="addFilter" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
@@ -62,7 +62,7 @@
     <xs:sequence minOccurs="0" maxOccurs="2">
       <xs:choice>
         <xs:element name="initialize" type="args" maxOccurs="1"/>
-        <xs:element name="properties" type="args" maxOccurs="1"/>
+        <xs:element name="settings" type="args" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>

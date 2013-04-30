@@ -56,48 +56,12 @@ namespace Fosol.Diagnostics
         #endregion
 
         #region Methods
-        internal static TraceListener CreateListener(Type type, Configuration.ArgumentElementCollection args)
+        public object Convert(string value)
         {
-            // Use the default constructor to create a new TraceListener.
-            if (args == null)
-            {
-                var ctor = type.GetConstructor(new Type[0]);
-
-                if (ctor != null)
-                    return ctor.Invoke(new object[0]) as TraceListener;
-            }
+            if (this.IsTypeConverter)
+                return this.Converter.ConvertFrom(value);
             else
-            {
-                object[] init = new object[args.Count];
-                int i = 0;
-                // Get the initialize attributes.
-                foreach (TraceInitializeAttribute attr in type.GetCustomAttributes(typeof(TraceInitializeAttribute), true))
-                {
-                    var arg = args.FirstOrDefault(a => a.Name.Equals(attr.Name, StringComparison.InvariantCulture));
-
-                    // Found an initialize attribute that matches the configured argument.
-                    if (arg != null)
-                    {
-                        // Apply the conversion to the initialize attribute.
-                        if (attr.IsTypeConverter)
-                            init[i] = attr.Converter.ConvertFrom(arg.Value);
-                        else
-                            init[i] = Convert.ChangeType(arg.Value, attr.Type);
-                    }
-                    else
-                        init[i] = arg.Value;
-
-                    i++;
-                }
-
-                // Get the constructor that matches the supplied initialize args (order is important).
-                var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
-
-                if (ctor != null)
-                    return ctor.Invoke(init) as TraceListener;
-            }
-
-            throw new ConfigurationErrorsException();
+                return System.Convert.ChangeType(value, this.Type);
         }
         #endregion
 

@@ -106,11 +106,20 @@ namespace Fosol.Diagnostics.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &quot;{0}&quot; filter argumetns are invalid..
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter initialize values are invalid..
         /// </summary>
-        internal static string Configuration_Exception_Filter_Arguments_Invalid {
+        internal static string Configuration_Exception_Filter_Initialize_Invalid {
             get {
-                return ResourceManager.GetString("Configuration_Exception_Filter_Arguments_Invalid", resourceCulture);
+                return ResourceManager.GetString("Configuration_Exception_Filter_Initialize_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter type &quot;{1}&quot; is not valid..
+        /// </summary>
+        internal static string Configuration_Exception_Filter_Type_Invalid {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Filter_Type_Invalid", resourceCulture);
             }
         }
         
@@ -174,6 +183,15 @@ namespace Fosol.Diagnostics.Resources {
         internal static string Configuration_Exception_Listener_Reference_Must_Exist {
             get {
                 return ResourceManager.GetString("Configuration_Exception_Listener_Reference_Must_Exist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; listener type &quot;{1}&quot; is not valid..
+        /// </summary>
+        internal static string Configuration_Exception_Listener_Type_Invalid {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Listener_Type_Invalid", resourceCulture);
             }
         }
     }

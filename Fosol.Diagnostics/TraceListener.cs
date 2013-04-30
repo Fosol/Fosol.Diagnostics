@@ -27,7 +27,7 @@ namespace Fosol.Diagnostics
             set { _Format = value; }
         }
 
-        [DefaultValue(Encoding.Default)]
+        [DefaultValue("default")]
         [TraceProperty("encoding", typeof(Common.Converters.EncodingConverter))]
         public Encoding Encoding
         {
@@ -43,56 +43,6 @@ namespace Fosol.Diagnostics
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Apply the arguments to the properties.
-        /// </summary>
-        /// <param name="args"></param>
-        internal void Initialize(IEnumerable<KeyValuePair<string, object>> args)
-        {
-            var properties = (
-                from p in this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                where p.GetCustomAttribute(typeof(TracePropertyAttribute), true) != null
-                select new
-                {
-                    Property = p,
-                    Attribute = p.GetCustomAttribute(typeof(TracePropertyAttribute), true) as TracePropertyAttribute
-                });
-
-            foreach (var property in properties)
-            {
-                var prop = property.Property;
-                var trace_attr = property.Attribute;
-
-                var arg = args.FirstOrDefault(a => prop.Name.Equals(a.Key, StringComparison.InvariantCulture)).Value;
-                if (arg != null)
-                {
-                    // Use the property converter if specified.
-                    if (trace_attr.Converter != null)
-                        prop.SetValue(this, trace_attr.Converter.ConvertFrom(arg));
-                    else
-                        prop.SetValue(this, arg);
-                    continue;
-                }
-
-                // Check for a default value.
-                var default_attr = prop.GetCustomAttribute(typeof(DefaultValueAttribute), true) as DefaultValueAttribute;
-                if (default_attr != null)
-                {
-                    // Use the property converter if specified.
-                    if (trace_attr.Converter != null)
-                        prop.SetValue(this, trace_attr.Converter.ConvertFrom(default_attr.Value));
-                    else
-                        prop.SetValue(this, default_attr.Value);
-                    continue;
-                }
-
-                if (trace_attr.IsRequired)
-                    throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Attribute_Required, trace_attr.Name));
-            }
-
-            Initialize();
-        }
-
         public virtual void Initialize()
         {
 

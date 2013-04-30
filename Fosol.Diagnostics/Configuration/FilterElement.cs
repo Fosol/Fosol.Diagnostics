@@ -12,7 +12,8 @@ namespace Fosol.Diagnostics.Configuration
         #region Variables
         private const string NameKey = "name";
         private const string TypeNameKey = "type";
-        private const string ArgsKey = "args";
+        private const string InitializeKey = "initialize";
+        private const string SettingsKey = "settings";
         private TraceFilter _Filter;
         #endregion
 
@@ -31,11 +32,18 @@ namespace Fosol.Diagnostics.Configuration
             set { base[TypeNameKey] = value; }
         }
 
-        [ConfigurationProperty(ArgsKey)]
-        public ArgumentElementCollection Args
+        [ConfigurationProperty(InitializeKey)]
+        public ArgumentElementCollection Initialize
         {
-            get { return (ArgumentElementCollection)base[ArgsKey]; }
-            set { base[ArgsKey] = value; }
+            get { return (ArgumentElementCollection)base[InitializeKey]; }
+            set { base[InitializeKey] = value; }
+        }
+
+        [ConfigurationProperty(SettingsKey)]
+        public ArgumentElementCollection Settings
+        {
+            get { return (ArgumentElementCollection)base[SettingsKey]; }
+            set { base[SettingsKey] = value; }
         }
         #endregion
 
@@ -50,20 +58,47 @@ namespace Fosol.Diagnostics.Configuration
 
             var name = this.Name;
             var type_name = this.TypeName;
-            var args = this.Args;
+            var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
+            var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
             // Use the default filter.
             if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type_name))
                 type_name = "Fosol.Diagnostics.Filters.DefaultFilter, Fosol.Diagnostics";
 
+            var type = Type.GetType(type_name);
+
+            if (type == null)
+                throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Filter_Type_Invalid, name, type_name));
+
             try
             {
-                if (args.Count > 0)
+                if (initialize != null)
                 {
-                    // Initialize the filter with the arguments.
-                    var largs = args.GetArguments(this.Name).Select(a => a.Value).ToArray();
-                    _Filter = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceFilter>(type_name, largs);
-                    return _Filter;
+                    object[] init = new object[initialize.Count];
+                    int i = 0;
+                    // Get the initialize attributes.
+                    foreach (TraceInitializeAttribute attr in type.GetCustomAttributes(typeof(TraceInitializeAttribute), true))
+                    {
+                        var config = initialize.FirstOrDefault(a => a.Name.Equals(attr.Name, StringComparison.InvariantCulture));
+
+                        // Found an initialize attribute that matches the configured argument.
+                        if (config != null)
+                        {
+                            init[i] = attr.Convert(config.Value);
+                            i++;
+                        }
+                    }
+
+                    // Get the constructor that matches the supplied initialize args (order is important).
+                    var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
+
+                    if (ctor != null)
+                    {
+                        _Filter = ctor.Invoke(init) as TraceFilter;
+                        return _Filter;
+                    }
+                    else
+                        throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Filter_Initialize_Invalid, this.Name));
                 }
                 else
                 {
@@ -74,7 +109,7 @@ namespace Fosol.Diagnostics.Configuration
             }
             catch
             {
-                throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Filter_Arguments_Invalid, this.Name));
+                throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Filter_Initialize_Invalid, this.Name));
             }
         }
         #endregion

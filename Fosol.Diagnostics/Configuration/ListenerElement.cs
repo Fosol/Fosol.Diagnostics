@@ -70,7 +70,7 @@ namespace Fosol.Diagnostics.Configuration
             var type_name = this.TypeName;
             var filter = (string.IsNullOrEmpty(this.Filter.Name) && string.IsNullOrEmpty(this.Filter.TypeName)) ? null : this.Filter;
             var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
-            var properties = (this.Properties.Count == 0) ? null : this.Properties;
+            var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
             // Annoyingly an empty TraceListener is created even if one isn't configured.
             // So check for this and exit.
@@ -81,7 +81,7 @@ namespace Fosol.Diagnostics.Configuration
             if (string.IsNullOrEmpty(type_name))
             {
                 // When refrencing a SharedListener you cannot include other configuration options.
-                if (filter != null || initialize != null || properties != null)
+                if (filter != null || initialize != null || settings != null)
                     throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Invalid_Properties, name));
 
                 // The reference must exist in the shared listeners.
@@ -99,25 +99,9 @@ namespace Fosol.Diagnostics.Configuration
             // Try to create the listener as it has been defined in the configuration.
             else
             {
-                try
-                {
-                    if (initialize != null && initialize.Count > 0)
-                    {
-                        // Initialize the listener with the arguments.
-                        _Listener = CreateListener();
-                        return _Listener;
-                    }
-                    else
-                    {
-                        // Initialize the listener without any arguments.
-                        _Listener = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceListener>(type_name);
-                        return _Listener;
-                    }
-                }
-                catch
-                {
-                    throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Arguments_Invalid, this.Name));
-                }
+                // Initialize the listener with the arguments.
+                _Listener = CreateListener();
+                return _Listener;
             }
         }
 
@@ -174,12 +158,12 @@ namespace Fosol.Diagnostics.Configuration
             {
                 var pinfos = (
                     from p in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    where p.GetCustomAttribute(typeof(TracePropertyAttribute), true) != null
+                    where p.GetCustomAttribute(typeof(TraceSettingAttribute), true) != null
                     select p);
 
                 foreach (var prop in pinfos)
                 {
-                    var attr = prop.GetCustomAttribute(typeof(TracePropertyAttribute), true) as TracePropertyAttribute;
+                    var attr = prop.GetCustomAttribute(typeof(TraceSettingAttribute), true) as TraceSettingAttribute;
                     var config = settings.FirstOrDefault(p => p.Name.Equals(attr.Name, StringComparison.InvariantCulture));
 
                     // The configuration provides a default value so apply it to the property.

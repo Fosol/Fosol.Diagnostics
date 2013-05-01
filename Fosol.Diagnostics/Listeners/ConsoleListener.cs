@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,9 +12,23 @@ namespace Fosol.Diagnostics.Listeners
         : TextWriterListener
     {
         #region Variables
+        private ConsoleColor _Background;
         #endregion
 
         #region Properties
+        [TraceSetting("background", typeof(EnumConverter), typeof(ConsoleColor))]
+        public ConsoleColor Background
+        {
+            get 
+            { 
+                return _Background; 
+            }
+            set 
+            { 
+                _Background = value;
+                Console.BackgroundColor = value;
+            }
+        }
         #endregion
 
         #region Constructors

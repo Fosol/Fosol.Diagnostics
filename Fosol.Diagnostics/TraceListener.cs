@@ -20,7 +20,7 @@ namespace Fosol.Diagnostics
 
         #region Properties
         [DefaultValue(_DefaultFormat)]
-        [TraceProperty("format", typeof(Converters.LogFormatConverter))]
+        [TraceSetting("format", typeof(Converters.LogFormatConverter))]
         public TraceFormat Format
         {
             get { return _Format; }
@@ -28,7 +28,7 @@ namespace Fosol.Diagnostics
         }
 
         [DefaultValue("default")]
-        [TraceProperty("encoding", typeof(Common.Converters.EncodingConverter))]
+        [TraceSetting("encoding", typeof(Common.Converters.EncodingConverter))]
         public Encoding Encoding
         {
             get { return _Encoding; }

@@ -88,7 +88,7 @@
     <Compile Include="TraceInitializeAttribute.cs" />
     <Compile Include="TraceListener.cs" />
     <Compile Include="TraceListenerCollection.cs" />
-    <Compile Include="TracePropertyAttribute.cs" />
+    <Compile Include="TraceSettingAttribute.cs" />
     <Compile Include="TraceManager.cs" />
     <Compile Include="Configuration\ArgumentElement.cs" />
     <Compile Include="Configuration\ArgumentElementCollection.cs" />

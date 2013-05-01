@@ -15,7 +15,7 @@ namespace Fosol.Diagnostics
     /// Declares the property or field as a configuration attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class TracePropertyAttribute
+    public sealed class TraceSettingAttribute
         : Attribute
     {
         #region Variables
@@ -57,7 +57,7 @@ namespace Fosol.Diagnostics
         /// <exception cref="System.ArgumentException">Parameter "name" cannot be empty.</exception>
         /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
         /// <param name="name">The unique name for this property used in the configuration file.</param>
-        public TracePropertyAttribute(string name)
+        public TraceSettingAttribute(string name)
         {
             Common.Validation.Assert.IsNotNullOrEmpty(name, "name");
             _Name = name;
@@ -70,7 +70,7 @@ namespace Fosol.Diagnostics
         /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
         /// <param name="name">The unique name for this property used in the configuration file.</param>
         /// <param name="isRequired">If true this will throw an exception if the property/field has not been set in the configuration.</param>
-        public TracePropertyAttribute(string name, bool isRequired)
+        public TraceSettingAttribute(string name, bool isRequired)
             : this(name)
         {
             _IsRequired = isRequired;
@@ -83,7 +83,7 @@ namespace Fosol.Diagnostics
         /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
         /// <param name="name">The unique name for this property used in the configuration file.</param>
         /// <param name="converterType">TypeConverter to use when assigning the configured value to the property/field.</param>
-        public TracePropertyAttribute(string name, Type converterType, params object[] converterArgs)
+        public TraceSettingAttribute(string name, Type converterType, params object[] converterArgs)
             : this(name, false, converterType, converterArgs)
         {
         }
@@ -96,7 +96,7 @@ namespace Fosol.Diagnostics
         /// <param name="name">The unique name for this property used in the configuration file.</param>
         /// <param name="isRequired">If true this will throw an exception if the property/field has not been set in the configuration.</param>
         /// <param name="converterType">TypeConverter to use when assigning the configured value to the property/field.</param>
-        public TracePropertyAttribute(string name, bool isRequired, Type converterType, params object[] converterArgs)
+        public TraceSettingAttribute(string name, bool isRequired, Type converterType, params object[] converterArgs)
             : this(name, isRequired)
         {
             if (converterType != null)

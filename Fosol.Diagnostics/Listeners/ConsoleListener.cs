@@ -12,23 +12,9 @@ namespace Fosol.Diagnostics.Listeners
         : TextWriterListener
     {
         #region Variables
-        private ConsoleColor _Background;
         #endregion
 
         #region Properties
-        [TraceSetting("background", typeof(EnumConverter), typeof(ConsoleColor))]
-        public ConsoleColor Background
-        {
-            get 
-            { 
-                return _Background; 
-            }
-            set 
-            { 
-                _Background = value;
-                Console.BackgroundColor = value;
-            }
-        }
         #endregion
 
         #region Constructors

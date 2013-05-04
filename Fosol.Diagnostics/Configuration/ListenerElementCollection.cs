@@ -20,7 +20,14 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-
+        internal void InitializeDefaultInternal()
+        {
+            this.BaseAdd(new ListenerElement()
+            {
+                Name = "Default",
+                TypeName = typeof(Listeners.DefaultListener).FullName
+            });
+        }
         #endregion
 
         #region Operators

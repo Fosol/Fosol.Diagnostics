@@ -50,7 +50,7 @@ namespace Fosol.Diagnostics
 
         public abstract void Write(string message);
 
-        internal void Write(TraceEvent traceEvent)
+        public virtual void Write(TraceEvent traceEvent)
         {
             Write(this.Format.Render(traceEvent));
         }

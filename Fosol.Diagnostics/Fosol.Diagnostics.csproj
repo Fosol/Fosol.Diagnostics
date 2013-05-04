@@ -78,6 +78,8 @@
     <Compile Include="Keywords\UserKeyword.cs" />
     <Compile Include="Keywords\WindowsIdentityKeyword.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
+    <Compile Include="Listeners\ColoredConsoleListener.cs" />
+    <Compile Include="Listeners\DefaultListener.cs" />
     <Compile Include="Listeners\TextWriterListener.cs" />
     <Compile Include="TraceEvent.cs" />
     <Compile Include="TraceEventProcess.cs" />

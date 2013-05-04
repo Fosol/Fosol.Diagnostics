@@ -71,7 +71,10 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-
+        protected override void InitializeDefault()
+        {
+            this.SharedListeners.InitializeDefaultInternal();
+        }
         #endregion
 
         #region Operators

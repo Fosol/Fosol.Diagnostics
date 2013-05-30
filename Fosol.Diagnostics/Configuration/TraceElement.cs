@@ -48,7 +48,15 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
+        internal void InitializeDefaultInternal()
+        {
+            this.InitializeDefault();
+        }
 
+        protected override void InitializeDefault()
+        {
+            this.Listeners.InitializeDefaultInternal();
+        }
         #endregion
 
         #region Operators

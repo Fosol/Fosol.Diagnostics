@@ -68,12 +68,15 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Constructors
+        public DiagnosticsSection()
+        {
+        }
         #endregion
 
         #region Methods
         protected override void InitializeDefault()
         {
-            this.SharedListeners.InitializeDefaultInternal();
+            Trace.InitializeDefaultInternal();
         }
         #endregion
 

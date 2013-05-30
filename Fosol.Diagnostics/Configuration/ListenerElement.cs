@@ -153,17 +153,18 @@ namespace Fosol.Diagnostics.Configuration
             if (_Listener == null)
                 throw new ConfigurationErrorsException();
 
-            // If property values were included in the configuration update the TraceListener.
-            if (settings != null)
-            {
-                var pinfos = (
-                    from p in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    where p.GetCustomAttribute(typeof(TraceSettingAttribute), true) != null
-                    select p);
+            var pinfos = (
+                from p in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                where p.GetCustomAttribute(typeof(TraceSettingAttribute), true) != null
+                select p);
 
-                foreach (var prop in pinfos)
+            foreach (var prop in pinfos)
+            {
+                var attr = prop.GetCustomAttribute(typeof(TraceSettingAttribute), true) as TraceSettingAttribute;
+
+                // If property values were included in the configuration update the TraceListener.
+                if (settings != null)
                 {
-                    var attr = prop.GetCustomAttribute(typeof(TraceSettingAttribute), true) as TraceSettingAttribute;
                     var config = settings.FirstOrDefault(p => p.Name.Equals(attr.Name, StringComparison.InvariantCulture));
 
                     // The configuration provides a default value so apply it to the property.
@@ -184,19 +185,10 @@ namespace Fosol.Diagnostics.Configuration
                         }
                     }
                     else
-                    {
-                        var attr_default = prop.GetCustomAttribute(typeof(DefaultValueAttribute), true) as DefaultValueAttribute;
-                        if (attr_default != null)
-                        {
-                            if (attr.Converter != null)
-                                Common.Helpers.ReflectionHelper.SetValue(prop, _Listener, attr_default.Value, attr.Converter);
-                            else
-                                prop.SetValue(_Listener, attr_default.Value);
-                        }
-                        else if (attr.IsRequired)
-                            throw new ConfigurationErrorsException();
-                    }
+                        ApplyDefaults(attr, prop);
                 }
+                else
+                    ApplyDefaults(attr, prop);
             }
 
             // Call the Initialize method.
@@ -206,6 +198,25 @@ namespace Fosol.Diagnostics.Configuration
                 return _Listener;
 
             throw new ConfigurationErrorsException();
+        }
+
+        /// <summary>
+        /// Apply the default attribute values to the property.
+        /// </summary>
+        /// <param name="attr">TraceSettingAttribute object.</param>
+        /// <param name="prop">PropertyInfo object.</param>
+        private void ApplyDefaults(TraceSettingAttribute attr, PropertyInfo prop)
+        {
+            var attr_default = prop.GetCustomAttribute(typeof(DefaultValueAttribute), true) as DefaultValueAttribute;
+            if (attr_default != null)
+            {
+                if (attr.Converter != null)
+                    Common.Helpers.ReflectionHelper.SetValue(prop, _Listener, attr_default.Value, attr.Converter);
+                else
+                    prop.SetValue(_Listener, attr_default.Value);
+            }
+            else if (attr.IsRequired)
+                throw new ConfigurationErrorsException();
         }
         #endregion
 

@@ -10,7 +10,7 @@ namespace Fosol.Diagnostics
     {
         #region Variables
         private static TraceManager _Manager;
-        private static Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
+        private static Fosol.Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
         private Configuration.ListenerElementCollection _SharedListeners;
         private Configuration.SourceElementCollection _Sources;
         private Configuration.TraceElement _Trace;
@@ -51,7 +51,7 @@ namespace Fosol.Diagnostics
         #region Constructors
         static TraceManager()
         {
-            _ConfigWatcher = new Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
+            _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
             _ConfigWatcher.Start();
             _Manager = new TraceManager();
         }

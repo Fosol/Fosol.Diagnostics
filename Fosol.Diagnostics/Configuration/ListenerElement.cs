@@ -17,7 +17,7 @@ namespace Fosol.Diagnostics.Configuration
         private const string InitializeKey = "initialize";
         private const string SettingsKey = "settings";
         private const string FilterKey = "filter";
-        private TraceListener _Listener;
+        private Listeners.TraceListener _Listener;
         #endregion
 
         #region Properties
@@ -61,7 +61,7 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-        internal TraceListener GetListener()
+        internal Listeners.TraceListener GetListener()
         {
             if (_Listener != null)
                 return _Listener;
@@ -105,7 +105,7 @@ namespace Fosol.Diagnostics.Configuration
             }
         }
 
-        private TraceListener CreateListener()
+        private Listeners.TraceListener CreateListener()
         {
             var name = this.Name;
             var type_name = this.TypeName;
@@ -124,7 +124,7 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(new Type[0]);
 
                 if (ctor != null)
-                    _Listener = ctor.Invoke(new object[0]) as TraceListener;
+                    _Listener = ctor.Invoke(new object[0]) as Listeners.TraceListener;
             }
             else
             {
@@ -147,7 +147,7 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
 
                 if (ctor != null)
-                    _Listener = ctor.Invoke(init) as TraceListener;
+                    _Listener = ctor.Invoke(init) as Listeners.TraceListener;
             }
 
             if (_Listener == null)

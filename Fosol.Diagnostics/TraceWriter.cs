@@ -62,6 +62,18 @@ namespace Fosol.Diagnostics
                 }
             }
         }
+
+        public void Flush()
+        {
+            if (this.Listeners != null)
+            {
+                foreach (var config in this.Listeners)
+                {
+                    var listener = config.GetListener();
+                    listener.Flush();
+                }
+            }
+        }
         #endregion
 
         #region Operators

@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
-    [TraceInitialize("useErrorStream", typeof(bool))]
+    /// <summary>
+    /// The ConsoleListener writes messages to the command console.
+    /// </summary>
+    [TraceInitialize("UseErrorStream", typeof(bool))]
     public class ConsoleListener
         : TextWriterListener
     {
@@ -18,12 +21,23 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of a ConsoleListener.
+        /// Writes messages to the Console.Out stream.
+        /// </summary>
         public ConsoleListener()
             : this(false)
         {
 
         }
 
+        /// <summary>
+        /// Creates a new instance of a ConsoleListener.
+        /// </summary>
+        /// <param name="useErrorStream">
+        ///     If 'true' it will write messages to the Console.Error stream.
+        ///     If 'false' it will write messages to the Console.Out stream.
+        /// </param>
         public ConsoleListener(bool useErrorStream)
             : base(useErrorStream ? Console.Error : Console.Out)
         {

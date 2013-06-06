@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Keywords
 {
     /// <summary>
-    /// Contains a dictionary of currently configured 
+    /// Contains a dictionary of currently configured FormatKeyword objects.
     /// </summary>
-    static class KeywordLibrary
+    public static class FormatKeywordLibrary
     {
         #region Variables
-        private static readonly Dictionary<string, Type> _Cache = new Dictionary<string, Type>();
+        private static readonly Fosol.Common.Caching.SimpleCache<Type> _Cache = new Fosol.Common.Caching.SimpleCache<Type>();
         #endregion
 
         #region Properties
@@ -35,9 +35,23 @@ namespace Fosol.Diagnostics.Keywords
         /// Initializes the library with 
         /// The Logger cannot use a keyword unless it's been registered.
         /// </summary>
-        static KeywordLibrary()
+        static FormatKeywordLibrary()
         {
-            foreach (var type in GetKeywordTypes(Assembly.GetCallingAssembly(), typeof(ITraceKeyword).Namespace))
+            var calling_assembly = Assembly.GetCallingAssembly();
+            var common_assembly_name = calling_assembly.GetReferencedAssemblies().FirstOrDefault(ra => ra.Name.Equals("Fosol.Common"));
+
+            // Load the Fosol.Common assembly keywords first.
+            if (common_assembly_name != null)
+            {
+                var common_assembly = Assembly.Load(common_assembly_name);
+                foreach (var type in GetKeywordTypes(common_assembly, typeof(Fosol.Common.Formatters.Keywords.FormatKeyword).Namespace))
+                {
+                    Add(type);
+                }
+            }
+
+            // Load the local assembly keywords next.
+            foreach (var type in GetKeywordTypes(calling_assembly, typeof(Keywords.TraceKeyword).Namespace))
             {
                 Add(type);
             }
@@ -46,29 +60,34 @@ namespace Fosol.Diagnostics.Keywords
 
         #region Methods
         /// <summary>
-        /// Add the TraceKeywordBase Type to the library.
+        /// Add the FormatKeywordBase Type to the library.
         /// </summary>
-        /// <param name="keywordType">TraceKeywordBase Type.</param>
+        /// <param name="keywordType">FormatKeywordBase Type.</param>
         /// <returns>Number of items in library.</returns>
         public static int Add(Type keywordType)
         {
             Common.Validation.Assert.IsNotNull(keywordType, "keywordType");
-            Common.Validation.Assert.IsAssignableFromType(keywordType, typeof(TraceKeyword), "keywordType");
-            Common.Validation.Assert.HasAttribute(keywordType, typeof(TraceKeywordAttribute), "keywordType");
+            Common.Validation.Assert.IsAssignableFromType(keywordType, typeof(Fosol.Common.Formatters.Keywords.FormatKeyword), "keywordType");
+            Common.Validation.Assert.HasAttribute(keywordType, typeof(Fosol.Common.Formatters.Keywords.FormatKeywordAttribute), "keywordType");
 
-            var attr = keywordType.GetCustomAttribute(typeof(TraceKeywordAttribute)) as TraceKeywordAttribute;
+            var attr = keywordType.GetCustomAttribute(typeof(Fosol.Common.Formatters.Keywords.FormatKeywordAttribute)) as Fosol.Common.Formatters.Keywords.FormatKeywordAttribute;
             if (_Cache.ContainsKey(attr.Name))
-                throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_Keyword_Already_Exists, attr.Name));
+            {
+                if (attr.Override)
+                    _Cache.Remove(attr.Name);
+                else
+                    throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_TraceKeyword_Already_Exists, attr.Name));
+            }
 
             _Cache.Add(attr.Name, keywordType);
             return _Cache.Count;
         }
 
         /// <summary>
-        /// Add all the TraceKeywordBase Types within the specified Assembly and Namespace.
+        /// Add all the FormatKeywordBase Types within the specified Assembly and Namespace.
         /// </summary>
         /// <param name="assemblyString">Fully qualified name of the assembly.</param>
-        /// <param name="nameOrNamespace">Namespace or fully qualified name to the TraceKeywordBase(s).</param>
+        /// <param name="nameOrNamespace">Namespace or fully qualified name to the FormatKeywordBase(s).</param>
         /// <returns>Number of items in library.</returns>
         public static int Add(string assemblyString, string nameOrNamespace)
         {
@@ -79,7 +98,7 @@ namespace Fosol.Diagnostics.Keywords
             if (assembly == null)
                 throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_Assembly_Is_Invalid, assemblyString));
 
-            // Fetch every TraceKeywordBase in the specified namespacePath.
+            // Fetch every FormatKeywordBase in the specified namespacePath.
             foreach (var type in GetKeywordTypes(assembly, nameOrNamespace))
             {
                 Add(type);
@@ -89,46 +108,46 @@ namespace Fosol.Diagnostics.Keywords
         }
 
         /// <summary>
-        /// Fetch all the TraceKeywordBase Type objects in the specified Assembly and Namespace.
+        /// Fetch all the FormatKeywordBase Type objects in the specified Assembly and Namespace.
         /// </summary>
-        /// <param name="assembly">Assembly containing TraceKeywordBase objects.</param>
-        /// <param name="nameOrNamespace">Namespace or fully qualified name to the TraceKeywordBase(s).</param>
-        /// <returns>Collection of TraceKeywordBase Types.</returns>
+        /// <param name="assembly">Assembly containing FormatKeywordBase objects.</param>
+        /// <param name="nameOrNamespace">Namespace or fully qualified name to the FormatKeywordBase(s).</param>
+        /// <returns>Collection of FormatKeywordBase Types.</returns>
         static IEnumerable<Type> GetKeywordTypes(Assembly assembly, string nameOrNamespace)
         {
             var type = GetKeywordType(assembly, nameOrNamespace);
             if (type != null)
                 return new List<Type>() { type };
 
-            // The keywordNamespace is only a path to possibly numerous TraceKeywordBase objects.
+            // The keywordNamespace is only a path to possibly numerous FormatKeywordBase objects.
             return (
                 from t in assembly.GetTypes()
                 where String.Equals(t.Namespace, nameOrNamespace, StringComparison.Ordinal)
-                    && typeof(ITraceKeyword).IsAssignableFrom(t)
-                    && t.HasAttribute(typeof(TraceKeywordAttribute))
+                    && typeof(Fosol.Common.Formatters.Keywords.FormatKeyword).IsAssignableFrom(t)
+                    && t.HasAttribute(typeof(Fosol.Common.Formatters.Keywords.FormatKeywordAttribute))
                 select t);
         }
 
         /// <summary>
-        /// Checks to see if the fullyQualifiedTypeName is of Type TraceKeywordBase.
+        /// Checks to see if the fullyQualifiedTypeName is of Type FormatKeywordBase.
         /// </summary>
-        /// <param name="assembly">Assembly containing TraceKeywordBase objects.</param>
-        /// <param name="fullyQualifiedTypeName">Fully qualified name of the TraceKeywordBase.</param>
-        /// <returns>TraceKeywordBase Type, or null if the fullyQualifiedTypeName was only a namespace.</returns>
+        /// <param name="assembly">Assembly containing FormatKeywordBase objects.</param>
+        /// <param name="fullyQualifiedTypeName">Fully qualified name of the FormatKeywordBase.</param>
+        /// <returns>FormatKeywordBase Type, or null if the fullyQualifiedTypeName was only a namespace.</returns>
         static Type GetKeywordType(Assembly assembly, string fullyQualifiedTypeName)
         {
             var type = assembly.GetType(fullyQualifiedTypeName, false);
 
             // The keywordNamespace pointed directly to a Type.
             // The keywordNamespace is a valid type.
-            // And it has been marked with the TraceKeywordAttribute.
+            // And it has been marked with the FormatKeywordAttribute.
             if (type != null)
             {
-                if (typeof(ITraceKeyword).IsAssignableFrom(type)
-                    && type.HasAttribute(typeof(TraceKeywordAttribute)))
+                if (typeof(Fosol.Common.Formatters.Keywords.FormatKeyword).IsAssignableFrom(type)
+                    && type.HasAttribute(typeof(Fosol.Common.Formatters.Keywords.FormatKeywordAttribute)))
                     return type;
 
-                throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_Keyword_Is_Not_Valid, fullyQualifiedTypeName));
+                throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_TraceKeyword_Is_Not_Valid, fullyQualifiedTypeName));
             }
 
             return null;
@@ -136,8 +155,8 @@ namespace Fosol.Diagnostics.Keywords
 
         /// <summary>
         /// Get the Keyword Type for the specified key name.
-        /// First it will check the library for an existing TraceKeywordBase.
-        /// Then it will check if the executing assembly contains a TraceKeywordBase with the specified name.
+        /// First it will check the library for an existing FormatKeywordBase.
+        /// Then it will check if the executing assembly contains a FormatKeywordBase with the specified name.
         /// </summary>
         /// <exception cref="System.ArgumentException">Parameter "typeName" cannot be empty.</exception>
         /// <exception cref="System.ArgumentNullException">Parameter "typeName" cannot be null.</exception>
@@ -158,14 +177,14 @@ namespace Fosol.Diagnostics.Keywords
             if (type == null)
                 type = GetKeywordType(Assembly.GetExecutingAssembly(), typeName);
             if (type == null)
-                throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_Keyword_Does_Not_Exist, typeName));
+                throw new InvalidOperationException(string.Format(Resources.Strings.Configuration_Exception_TraceKeyword_Does_Not_Exist, typeName));
             return type;
         }
 
         /// <summary>
-        /// Checks to see if the library contains the TraceKeywordBase with the specified name.
+        /// Checks to see if the library contains the FormatKeywordBase with the specified name.
         /// </summary>
-        /// <param name="name">Name of TraceKeywordBase.</param>
+        /// <param name="name">Name of FormatKeywordBase.</param>
         /// <returns>True if exists.</returns>
         public static bool ContainsKey(string name)
         {

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
+    /// <summary>
+    /// The ColoredConsoleListener writes messages to the command console and provides a way to use color.
+    /// </summary>
     public class ColoredConsoleListener
         : ConsoleListener
     {
@@ -20,8 +23,11 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Properties
+        /// <summary>
+        /// get/set - The console background color.
+        /// </summary>
         [DefaultValue(ConsoleColor.Black)]
-        [TraceSetting("backgroundColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("BackgroundColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor BackgroundColor
         {
             get 
@@ -35,8 +41,11 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// get/set - The color debug messages will be written in.
+        /// </summary>
         [DefaultValue(ConsoleColor.Gray)]
-        [TraceSetting("debugColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("DebugColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor DebugColor
         {
             get
@@ -49,8 +58,11 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// get/set - The color information messages will be written in.
+        /// </summary>
         [DefaultValue(ConsoleColor.White)]
-        [TraceSetting("informationColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("InformationColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor InformationColor
         {
             get
@@ -63,8 +75,11 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// get/set - The color warning messages will be written in.
+        /// </summary>
         [DefaultValue(ConsoleColor.DarkRed)]
-        [TraceSetting("warningColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("WarningColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor WarningColor
         {
             get
@@ -77,8 +92,11 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// get/set - The color error messages will be written in.
+        /// </summary>
         [DefaultValue(ConsoleColor.Red)]
-        [TraceSetting("errorColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("ErrorColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor ErrorColor
         {
             get
@@ -91,8 +109,11 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// get/set - The color critical messages will be written in.
+        /// </summary>
         [DefaultValue(ConsoleColor.Red)]
-        [TraceSetting("criticalColor", typeof(EnumConverter), typeof(ConsoleColor))]
+        [TraceSetting("CriticalColor", typeof(EnumConverter), typeof(ConsoleColor))]
         public ConsoleColor CriticalColor
         {
             get
@@ -107,12 +128,22 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of a ColoredConsoleListener.
+        /// </summary>
         public ColoredConsoleListener()
             : base(false)
         {
 
         }
 
+        /// <summary>
+        /// Creates a new instance of a ColoredConsoleListener.
+        /// </summary>
+        /// <param name="useErrorStream">
+        ///     If 'true' it will write messages to the Console.Error stream.
+        ///     If 'false' it will write messages to the Console.Out stream.
+        /// </param>
         public ColoredConsoleListener(bool useErrorStream)
             : base(useErrorStream)
         {
@@ -121,6 +152,11 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Write the message to this listener.
+        /// Updates the ForegroundColor based on the message TraceEventType.
+        /// </summary>
+        /// <param name="traceEvent">TraceEvent to write.</param>
         public override void Write(TraceEvent traceEvent)
         {
             switch (traceEvent.EventType)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// Renders the Id of the trace event.
     /// </summary>
-    [TraceKeyword("id")]
+    [FormatKeyword("id")]
     public sealed class IdKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -21,7 +22,7 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// get/set - The string format of the TraceEventType property.
         /// </summary>
-        [TraceKeywordProperty("format", new string[] { "f" })]
+        [FormatKeywordProperty("format", new string[] { "f" })]
         public string Format { get; set; }
         #endregion
 
@@ -41,11 +42,13 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Renders the keyword from the trace event.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>Rendered keyword value.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            return traceEvent.Id.ToString(this.Format);
+            if (traceEvent != null)
+                return traceEvent.Id.ToString(this.Format);
+            return null;
         }
         #endregion
 

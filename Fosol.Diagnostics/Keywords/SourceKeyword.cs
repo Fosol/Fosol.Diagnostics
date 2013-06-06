@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -11,9 +12,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// SourceKeyword returns the source name from the trace event.
     /// </summary>
-    [TraceKeyword("source")]
+    [FormatKeyword("source")]
     public sealed class SourceKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -36,11 +37,14 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Generates the source text from this LogMessage object.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>Message Source value.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            return traceEvent.Source;
+            if (traceEvent != null)
+                return traceEvent.Source;
+
+            return null;
         }
         #endregion
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// The Timestamp from the trace event.
     /// </summary>
-    [TraceKeyword("timestamp")]
+    [FormatKeyword("timestamp", true)]
     public sealed class TimestampKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -22,7 +23,7 @@ namespace Fosol.Diagnostics.Keywords
 
         #region Constructors
         /// <summary>
-        /// Creates a new instance of a StackTraceKeyword object.
+        /// Creates a new instance of a StackFormatKeyword object.
         /// </summary>
         /// <param name="attributes">Attributes to include with this keyword.</param>
         public TimestampKeyword(StringDictionary attributes = null)
@@ -35,11 +36,14 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Returns the timestamp of the TraceEvent.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>The trace event call stack.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            return traceEvent.DateTime.Ticks.ToString();
+            if (traceEvent != null)
+                return traceEvent.DateTime.Ticks.ToString();
+            else
+                return DateTime.Now.Ticks.ToString();
         }
         #endregion
 

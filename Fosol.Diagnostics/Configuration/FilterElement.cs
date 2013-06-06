@@ -14,7 +14,7 @@ namespace Fosol.Diagnostics.Configuration
         private const string TypeNameKey = "type";
         private const string InitializeKey = "initialize";
         private const string SettingsKey = "settings";
-        private TraceFilter _Filter;
+        private Filters.TraceFilter _Filter;
         #endregion
 
         #region Properties
@@ -51,7 +51,7 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-        internal TraceFilter GetFilter()
+        internal Filters.TraceFilter GetFilter()
         {
             if (_Filter != null)
                 return _Filter;
@@ -94,7 +94,7 @@ namespace Fosol.Diagnostics.Configuration
 
                     if (ctor != null)
                     {
-                        _Filter = ctor.Invoke(init) as TraceFilter;
+                        _Filter = ctor.Invoke(init) as Filters.TraceFilter;
                         return _Filter;
                     }
                     else
@@ -103,7 +103,7 @@ namespace Fosol.Diagnostics.Configuration
                 else
                 {
                     // Initialize the filter without any arguments.
-                    _Filter = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<TraceFilter>(type_name);
+                    _Filter = Fosol.Common.Helpers.ReflectionHelper.ConstructObject<Filters.TraceFilter>(type_name);
                     return _Filter;
                 }
             }

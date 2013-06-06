@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +12,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// DateTimeKeyword places a date time value into the message.
     /// </summary>
-    [TraceKeyword("datetime")]
+    [FormatKeyword("datetime", true)]
     public sealed class DateTimeKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -21,7 +23,8 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// get/set - The format string for the DateTime value.
         /// </summary>
-        [TraceKeywordProperty("format", new string[] { "f" })]
+        [DefaultValue("G")]
+        [FormatKeywordProperty("format", new string[] { "f" })]
         public string Format { get; set; }
         #endregion
 
@@ -40,11 +43,14 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Returns the date time value of the TraceEvent.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>Message DateTime value.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            return traceEvent.DateTime.ToString(this.Format);
+            if (traceEvent != null)
+                return traceEvent.DateTime.ToString(this.Format);
+
+            return DateTime.Now.ToString(this.Format);
         }
         #endregion
 

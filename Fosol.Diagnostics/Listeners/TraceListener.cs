@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Extensions.Bytes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -7,28 +8,29 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fosol.Diagnostics
+namespace Fosol.Diagnostics.Listeners
 {
     public abstract class TraceListener
         : IDisposable
     {
         #region Variables
+        protected readonly System.Threading.ReaderWriterLockSlim _ChildLock = new System.Threading.ReaderWriterLockSlim();
         private const string _DefaultFormat = "{source} {type}: {id}: {message}{newline}";
-        private TraceFormat _Format;
+        private TraceFormatter _Format;
         private Encoding _Encoding;
         #endregion
 
         #region Properties
         [DefaultValue(_DefaultFormat)]
-        [TraceSetting("format", typeof(Converters.LogFormatConverter))]
-        public TraceFormat Format
+        [TraceSetting("Format", typeof(Converters.TraceFormatterConverter))]
+        public TraceFormatter Format
         {
             get { return _Format; }
             set { _Format = value; }
         }
 
         [DefaultValue("default")]
-        [TraceSetting("encoding", typeof(Common.Converters.EncodingConverter))]
+        [TraceSetting("Encoding", typeof(Common.Converters.EncodingConverter))]
         public Encoding Encoding
         {
             get { return _Encoding; }
@@ -53,6 +55,15 @@ namespace Fosol.Diagnostics
         public virtual void Write(TraceEvent traceEvent)
         {
             Write(this.Format.Render(traceEvent));
+        }
+
+        /// <summary>
+        /// Convert the data into a string with the configured Encoding and write to the listener.
+        /// </summary>
+        /// <param name="data">Data to write to the listener.</param>
+        public virtual void Write(byte[] data)
+        {
+            this.Write(data.ToStringValue(this.Encoding));
         }
 
         public virtual void Close()

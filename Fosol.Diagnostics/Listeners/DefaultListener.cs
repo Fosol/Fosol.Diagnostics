@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
+    /// <summary>
+    /// The DefaultListener sends messages to the Operating System OuputDebugString endpoint.
+    /// </summary>
     public sealed class DefaultListener
         : TraceListener
     {
@@ -20,6 +23,10 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Write message to Operating System OutputDebugString endpoint.
+        /// </summary>
+        /// <param name="message">Message to write.</param>
         public override void Write(string message)
         {
             if (Debugger.IsLogging())

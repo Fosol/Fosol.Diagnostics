@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Converters
 {
     /// <summary>
-    /// Convert a special formatted string into a LogFormat (or vise-versa).
+    /// Convert a special formatted string into a TraceFormat (or vise-versa).
     /// </example>
-    public class LogFormatConverter
+    public class TraceFormatterConverter
         : TypeConverter
     {
         #region Variables
@@ -52,7 +52,7 @@ namespace Fosol.Diagnostics.Converters
         }
 
         /// <summary>
-        /// Convert from a specially formatted string value to a LogFormat.
+        /// Convert from a specially formatted string value to a TraceFormat.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="culture"></param>
@@ -62,7 +62,7 @@ namespace Fosol.Diagnostics.Converters
         {
             if (value.GetType() == typeof(string))
             {
-                return new TraceFormat((string)value);
+                return new TraceFormatter((string)value);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -79,9 +79,9 @@ namespace Fosol.Diagnostics.Converters
         {
             if (destinationType == typeof(string))
             {
-                if (value.GetType() == typeof(TraceFormat))
+                if (value.GetType() == typeof(TraceFormatter))
                 {
-                    var val = value as TraceFormat;
+                    var val = value as TraceFormatter;
                     return val.ToString();
                 }
             }

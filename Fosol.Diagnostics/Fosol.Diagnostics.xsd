@@ -21,29 +21,35 @@
   </xs:element>
 
   <xs:complexType name="listeners">
-    <xs:choice minOccurs="0">
-      <xs:element name="add" type="addListener"/>
-      <xs:element name="clear"/>
-    </xs:choice>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="add" type="addListener"/>
+        <xs:element name="clear"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="addListener">
-    <xs:sequence minOccurs="0" maxOccurs="2">
-      <xs:choice>
-        <xs:element name="initialize" type="args" maxOccurs="1"/>
-        <xs:element name="settings" type="args" maxOccurs="1"/>
-        <xs:element name="filter" type="addFilter" maxOccurs="1"/>
-      </xs:choice>
+    <xs:sequence minOccurs="0" maxOccurs="3">
+      <xs:sequence>
+        <xs:choice>
+          <xs:element name="initialize" type="args" maxOccurs="1"/>
+          <xs:element name="settings" type="args" maxOccurs="1"/>
+          <xs:element name="filter" type="addFilter" maxOccurs="1"/>
+        </xs:choice>
+      </xs:sequence>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="type" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="args">
-    <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="add" type="addArgs"/>
-      <xs:element name="clear"/>
-    </xs:choice>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="add" type="addArgs" maxOccurs="unbounded"/>
+        <xs:element name="clear"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="addArgs">
@@ -52,10 +58,12 @@
   </xs:complexType>
 
   <xs:complexType name="filters">
-    <xs:choice minOccurs="0">
-      <xs:element name="add" type="addFilter"/>
-      <xs:element name="clear"/>
-    </xs:choice>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="add" type="addFilter" maxOccurs="unbounded"/>
+        <xs:element name="clear"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="addFilter">
@@ -70,10 +78,12 @@
   </xs:complexType>
 
   <xs:complexType name="sources">
-    <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="add" type="addSource"/>
-      <xs:element name="clear"/>
-    </xs:choice>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="add" type="addSource" maxOccurs="unbounded"/>
+        <xs:element name="clear"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="addSource">

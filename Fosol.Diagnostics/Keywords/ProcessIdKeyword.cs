@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// The ProcessId from the trace event.
     /// </summary>
-    [TraceKeyword("processId")]
+    [FormatKeyword("processId")]
     public sealed class ProcessIdKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -35,11 +36,14 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Returns the call stack value of the trace event.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>The trace event call stack.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            return traceEvent.Process.ProcessId.ToString();
+            if (traceEvent != null)
+                return traceEvent.Process.ProcessId.ToString();
+
+            return null;
         }
         #endregion
 

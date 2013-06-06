@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Formatters.Keywords;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// Provides a way to render the log type information.
     /// </summary>
-    [TraceKeyword("type")]
+    [FormatKeyword("type")]
     public sealed class EventTypeKeyword
-        : DynamicKeyword
+        : TraceKeyword
     {
         #region Variables
         #endregion
@@ -21,19 +22,19 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// get/set - The string format of the TraceEventType property.
         /// </summary>
-        [TraceKeywordProperty("format", new string[] { "f" })]
+        [FormatKeywordProperty("format", new string[] { "f" })]
         public string Format { get; set; }
 
         /// <summary>
         /// get/set - Whether to lowercase.
         /// </summary>
-        [TraceKeywordProperty("lowercase", new string[] { "lc", "low", "lower" })]
+        [FormatKeywordProperty("lowercase", new string[] { "lc", "low", "lower" })]
         public bool ToLower { get; set; }
 
         /// <summary>
         /// get/set - Whether to uppercase.
         /// </summary>
-        [TraceKeywordProperty("uppercase", new string[] { "uc", "up", "upper" })]
+        [FormatKeywordProperty("uppercase", new string[] { "uc", "up", "upper" })]
         public bool ToUpper { get; set; }
         #endregion
 
@@ -53,17 +54,22 @@ namespace Fosol.Diagnostics.Keywords
         /// <summary>
         /// Renders the log event type information for the trace event.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="traceEvent">Information object containing data for the keyword.</param>
         /// <returns>Log event type for the trace event.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            if (this.ToLower)
-                return traceEvent.EventType.ToString(this.Format).ToLower();
+            if (traceEvent != null)
+            {
+                if (this.ToLower)
+                    return traceEvent.EventType.ToString(this.Format).ToLower();
 
-            if (this.ToUpper)
-                return traceEvent.EventType.ToString(this.Format).ToUpper();
+                if (this.ToUpper)
+                    return traceEvent.EventType.ToString(this.Format).ToUpper();
 
-            return traceEvent.EventType.ToString(this.Format);
+                return traceEvent.EventType.ToString(this.Format);
+            }
+
+            return null;
         }
         #endregion
 

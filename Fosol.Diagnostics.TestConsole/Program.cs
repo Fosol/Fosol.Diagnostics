@@ -18,8 +18,8 @@ namespace Fosol.Diagnostics.TestConsole
             log.Write(TraceEventType.Error, "Error");
             log.Write(TraceEventType.Critical, "Critical");
             log.Write(TraceEventType.Stop, "Stop");
-
             Console.ReadKey();
+            log.Flush();
         }
     }
 }

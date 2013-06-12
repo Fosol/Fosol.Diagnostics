@@ -26,9 +26,10 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// Write message to Operating System OutputDebugString endpoint.
         /// </summary>
-        /// <param name="message">Message to write.</param>
-        public override void Write(string message)
+        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
+        protected override void OnWrite(TraceEvent traceEvent)
         {
+            var message = this.Render(traceEvent);
             if (Debugger.IsLogging())
                 Debugger.Log(0, null, message);
             else if (message == null)

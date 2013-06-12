@@ -44,12 +44,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\TraceFormatterConverter.cs" />
+    <Compile Include="Events\WriteEventArgs.cs" />
+    <Compile Include="Exceptions\ConfigurationListenerException.cs" />
     <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
     <Compile Include="Filters\DefaultFilter.cs" />
     <Compile Include="Keywords\CallStackKeyword.cs" />
     <Compile Include="Keywords\DateTimeKeyword.cs" />
     <Compile Include="Keywords\EventTypeKeyword.cs" />
     <Compile Include="Keywords\IdKeyword.cs" />
+    <Compile Include="Keywords\ParameterKeyword.cs" />
     <Compile Include="Keywords\TraceKeyword.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -62,6 +65,8 @@
     <Compile Include="Keywords\TimestampKeyword.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
     <Compile Include="Listeners\ColoredConsoleListener.cs" />
+    <Compile Include="Listeners\DatabaseListener.cs" />
+    <Compile Include="Listeners\EventLogListener.cs" />
     <Compile Include="Listeners\StreamListener.cs" />
     <Compile Include="Listeners\DefaultListener.cs" />
     <Compile Include="Listeners\TextFileListener.cs" />

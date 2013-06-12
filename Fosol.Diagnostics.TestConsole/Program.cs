@@ -10,15 +10,25 @@ namespace Fosol.Diagnostics.TestConsole
     {
         static void Main(string[] args)
         {
+            var stop = false;
             var log = Fosol.Diagnostics.TraceManager.GetWriter();
-            log.Write(TraceEventType.Start, "Start");
-            log.Write(TraceEventType.Debug, "Debug");
-            log.Write(TraceEventType.Information, "Information");
-            log.Write(TraceEventType.Warning, "Warning");
-            log.Write(TraceEventType.Error, "Error");
-            log.Write(TraceEventType.Critical, "Critical");
-            log.Write(TraceEventType.Stop, "Stop");
-            Console.ReadKey();
+
+            do
+            {
+                log.Write(TraceEventType.Start, "Start");
+                log.Write(TraceEventType.Debug, "Debug");
+                log.Write(TraceEventType.Information, "Information");
+                log.Write(TraceEventType.Warning, "Warning");
+                log.Write(TraceEventType.Error, "Error");
+                log.Write(TraceEventType.Critical, "Critical");
+                log.Write(TraceEventType.Stop, "Stop");
+                var key = Console.ReadKey();
+
+                if (key.Key == ConsoleKey.Escape)
+                    stop = true;
+            }
+            while (!stop);
+
             log.Flush();
         }
     }

@@ -15,11 +15,30 @@ namespace Fosol.Diagnostics.Listeners
         : TraceListener
     {
         #region Variables
+        private const int _DefaultBufferSize = 1024;
         private TextWriter _Writer;
-        private bool _AutoFlush;
+        private AutoFlushOption _AutoFlush;
         private int _BufferSize;
-        private int _FlushSize;
         private int _BufferUsed;
+
+        /// <summary>
+        /// AutoFlushOption provides a way to control when auto flushing occurs.
+        /// </summary>
+        public enum AutoFlushOption
+        {
+            /// <summary>
+            /// Never auto flush.
+            /// </summary>
+            Never = 0,
+            /// <summary>
+            /// Flush after every write.
+            /// </summary>
+            EveryWrite = 1,
+            /// <summary>
+            /// Flush when the buffer is full.
+            /// </summary>
+            BufferFull = 2
+        }
         #endregion
 
         #region Properties
@@ -28,134 +47,47 @@ namespace Fosol.Diagnostics.Listeners
         /// </summary>
         public TextWriter Writer
         {
-            get 
+            get
             {
-                // If already read locked just return the value.
-                if (_ChildLock.IsUpgradeableReadLockHeld || _ChildLock.IsReadLockHeld)
-                    return _Writer;
-
-                _ChildLock.EnterReadLock();
-                try
-                {
-                    return _Writer;
-                }
-                finally
-                {
-                    _ChildLock.ExitReadLock();
-                }
+                return _Writer;
             }
-            set 
+            set
             {
-                _ChildLock.EnterWriteLock();
-                try
-                {
-                    _Writer = value;
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
-                }
+                _Writer = value;
             }
         }
 
         /// <summary>
         /// get/set - Controls whether after every write it will flush.
         /// </summary>
-        [DefaultValue(false)]
-        [TraceSetting("AutoFlush")]
-        public bool AutoFlush
+        [DefaultValue(AutoFlushOption.Never)]
+        [TraceSetting("AutoFlush", typeof(EnumConverter), typeof(AutoFlushOption))]
+        public AutoFlushOption AutoFlush
         {
             get
             {
-                _ChildLock.EnterReadLock();
-                try
-                {
-                    return _AutoFlush;
-                }
-                finally
-                {
-                    _ChildLock.ExitReadLock();
-                }
+                return _AutoFlush;
             }
             set
             {
-                _ChildLock.EnterWriteLock();
-                try
-                {
-                    _AutoFlush = value;
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
-                }
+                _AutoFlush = value;
             }
         }
 
         /// <summary>
         /// get/set - The buffer size (in bytes) of the Stream.
         /// </summary>
-        [DefaultValue(1024)]
+        [DefaultValue(_DefaultBufferSize)]
         [TraceSetting("BufferSize")]
         public int BufferSize
         {
             get
             {
-                _ChildLock.EnterReadLock();
-                try
-                {
-                    return _BufferSize;
-                }
-                finally
-                {
-                    _ChildLock.ExitReadLock();
-                }
+                return _BufferSize;
             }
             set
             {
-                _ChildLock.EnterWriteLock();
-                try
-                {
-                    _BufferSize = value;
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
-                }
-            }
-        }
-
-        /// <summary>
-        /// get/set - Controls when the Stream is flushed, by default it will flush when the Buffer is full, but this means that the Stream's Buffer will grow before flushing.
-        /// It's best to set this value to be less than the BufferSize so that the Buffer is flushed before the Stream needs to increase the Buffer size.
-        /// Set it to '0' if you want to flush manually.
-        /// </summary>
-        [DefaultValue(1024)]
-        [TraceSetting("FlushSize")]
-        public int FlushSize
-        {
-            get
-            {
-                _ChildLock.EnterReadLock();
-                try
-                {
-                    return _FlushSize;
-                }
-                finally
-                {
-                    _ChildLock.ExitReadLock();
-                }
-            }
-            set
-            {
-                _ChildLock.EnterWriteLock();
-                try
-                {
-                    _FlushSize = value;
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
-                }
+                _BufferSize = value;
             }
         }
 
@@ -166,27 +98,11 @@ namespace Fosol.Diagnostics.Listeners
         {
             get
             {
-                _ChildLock.EnterReadLock();
-                try
-                {
-                    return _BufferUsed;
-                }
-                finally
-                {
-                    _ChildLock.ExitReadLock();
-                }
+                return _BufferUsed;
             }
             set
             {
-                _ChildLock.EnterWriteLock();
-                try
-                {
-                    _BufferUsed = value;
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
-                }
+                _BufferUsed = value;
             }
         }
         #endregion
@@ -207,7 +123,7 @@ namespace Fosol.Diagnostics.Listeners
         /// <param name="stream">The Stream that will be written to.</param>
         public TextWriterListener(Stream stream)
         {
-            this.Writer = new StreamWriter(stream);
+            _Writer = new StreamWriter(stream);
         }
 
         /// <summary>
@@ -217,7 +133,7 @@ namespace Fosol.Diagnostics.Listeners
         /// <param name="writer">The TextWriter that will be written to.</param>
         public TextWriterListener(TextWriter writer)
         {
-            this.Writer = writer;
+            _Writer = writer;
         }
         #endregion
 
@@ -225,55 +141,32 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// Write the message to this listener.
         /// </summary>
-        /// <param name="message">The message to write.</param>
-        public override void Write(string message)
+        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
+        protected override void OnWrite(TraceEvent traceEvent)
         {
-            if (!EnsureWriter())
+            if (this.Writer == null)
                 return;
 
+            var message = this.Render(traceEvent);
             try
             {
+                var length = this.Encoding.GetByteCount(message);
+
+                if (this.AutoFlush == AutoFlushOption.BufferFull
+                    && this.BufferUsed + length >= this.BufferSize)
+                    this.Flush();
+
                 this.Writer.Write(message);
 
-                if (this.AutoFlush)
-                    this.Flush();
-                else if (this.FlushSize > 0)
-                {
-                    _ChildLock.EnterUpgradeableReadLock();
-                    try
-                    {
-                        this.BufferUsed += this.Encoding.GetByteCount(message);
+                this.BufferUsed += length;
 
-                        if (_BufferUsed >= _FlushSize)
-                        {
-                            this.Flush();
-                        }
-                    }
-                    finally
-                    {
-                        _ChildLock.ExitUpgradeableReadLock();
-                    }
-                }
+                if (this.AutoFlush == AutoFlushOption.EveryWrite)
+                    this.Flush();
             }
             catch (ObjectDisposedException)
             {
 
             }
-        }
-
-        /// <summary>
-        /// Ensure that the Writer has been initialized.
-        /// If it hasn't this listener will not write to the stream.
-        /// </summary>
-        /// <returns>'True' if the Writer has been initialized.</returns>
-        protected virtual bool EnsureWriter()
-        {
-            if (this.Writer == null)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -286,6 +179,8 @@ namespace Fosol.Diagnostics.Listeners
                 try
                 {
                     this.Writer.Close();
+                    this.Writer = null;
+                    this.BufferUsed = 0;
                 }
                 catch (ObjectDisposedException)
                 {
@@ -300,19 +195,14 @@ namespace Fosol.Diagnostics.Listeners
         {
             if (this.Writer != null)
             {
-                _ChildLock.EnterWriteLock();
                 try
                 {
-                    _Writer.Flush();
+                    this.Writer.Flush();
                     // Reset the buffer.
-                    _BufferUsed = 0;
+                    this.BufferUsed = 0;
                 }
                 catch (ObjectDisposedException)
                 {
-                }
-                finally
-                {
-                    _ChildLock.ExitWriteLock();
                 }
             }
         }
@@ -325,7 +215,6 @@ namespace Fosol.Diagnostics.Listeners
             if (this.Writer != null)
             {
                 Close();
-                this.Writer = null;
             }
         }
         #endregion

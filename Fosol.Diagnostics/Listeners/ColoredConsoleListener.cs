@@ -156,28 +156,32 @@ namespace Fosol.Diagnostics.Listeners
         /// Write the message to this listener.
         /// Updates the ForegroundColor based on the message TraceEventType.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent to write.</param>
-        public override void Write(TraceEvent traceEvent)
+        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
+        protected override bool OnBeforeWrite(TraceEvent traceEvent)
         {
-            switch (traceEvent.EventType)
+            if (traceEvent != null)
             {
-                case (TraceEventType.Critical):
-                    Console.ForegroundColor = this.CriticalColor;
-                    break;
-                case (TraceEventType.Debug):
-                    Console.ForegroundColor = this.DebugColor;
-                    break;
-                case (TraceEventType.Error):
-                    Console.ForegroundColor = this.ErrorColor;
-                    break;
-                case (TraceEventType.Warning):
-                    Console.ForegroundColor = this.WarningColor;
-                    break;
-                default:
-                    Console.ForegroundColor = this.InformationColor;
-                    break;
+                switch (traceEvent.EventType)
+                {
+                    case (TraceEventType.Critical):
+                        Console.ForegroundColor = this.CriticalColor;
+                        break;
+                    case (TraceEventType.Debug):
+                        Console.ForegroundColor = this.DebugColor;
+                        break;
+                    case (TraceEventType.Error):
+                        Console.ForegroundColor = this.ErrorColor;
+                        break;
+                    case (TraceEventType.Warning):
+                        Console.ForegroundColor = this.WarningColor;
+                        break;
+                    default:
+                        Console.ForegroundColor = this.InformationColor;
+                        break;
+                }
             }
-            base.Write(traceEvent);
+
+            return base.OnBeforeWrite(traceEvent);
         }
         #endregion
 

@@ -141,11 +141,17 @@
   <data name="Configuration_Exception_Listener_Arguments_Invalid" xml:space="preserve">
     <value>The "{0}" listener arguments are invalid.</value>
   </data>
+  <data name="Configuration_Exception_Listener_Failed" xml:space="preserve">
+    <value>The "{0}" listener failed to be created.</value>
+  </data>
   <data name="Configuration_Exception_Listener_Reference_Invalid_Properties" xml:space="preserve">
     <value>The "{0}" listener reference cannot include additional properties.</value>
   </data>
   <data name="Configuration_Exception_Listener_Reference_Must_Exist" xml:space="preserve">
     <value>The "{0}" listener reference must point to an existing shared listener.</value>
+  </data>
+  <data name="Configuration_Exception_Listener_Setting_Required" xml:space="preserve">
+    <value>The "{0}" listener requires the "{1}" setting attribute to be configured.</value>
   </data>
   <data name="Configuration_Exception_Listener_Type_Invalid" xml:space="preserve">
     <value>The "{0}" listener type "{1}" is not valid.</value>

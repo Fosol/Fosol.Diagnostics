@@ -82,15 +82,15 @@ namespace Fosol.Diagnostics.Configuration
             {
                 // When refrencing a SharedListener you cannot include other configuration options.
                 if (filter != null || initialize != null || settings != null)
-                    throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Invalid_Properties, name));
+                    throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Invalid_Properties, name));
 
                 // The reference must exist in the shared listeners.
                 if (TraceManager.Manager.SharedListeners == null)
-                    throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
+                    throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
 
                 var listener = TraceManager.Manager.SharedListeners[name];
                 if (listener == null)
-                    throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
+                    throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
 
                 // Reference the shared listener.
                 _Listener = listener.GetListener();
@@ -116,7 +116,7 @@ namespace Fosol.Diagnostics.Configuration
             var type = Type.GetType(type_name);
 
             if (type == null)
-                throw new ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_Listener_Type_Invalid, name, type_name));
+                throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Type_Invalid, name, type_name));
 
             // Use the default constructor to create a new TraceListener.
             if (initialize == null)
@@ -151,7 +151,7 @@ namespace Fosol.Diagnostics.Configuration
             }
 
             if (_Listener == null)
-                throw new ConfigurationErrorsException();
+                throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Failed, this.Name));
 
             var pinfos = (
                 from p in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -194,10 +194,7 @@ namespace Fosol.Diagnostics.Configuration
             // Call the Initialize method.
             _Listener.Initialize();
 
-            if (_Listener != null)
-                return _Listener;
-
-            throw new ConfigurationErrorsException();
+            return _Listener;
         }
 
         /// <summary>
@@ -216,7 +213,7 @@ namespace Fosol.Diagnostics.Configuration
                     prop.SetValue(_Listener, attr_default.Value);
             }
             else if (attr.IsRequired)
-                throw new ConfigurationErrorsException();
+                throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Setting_Required, this.Name, attr.Name));
         }
         #endregion
 

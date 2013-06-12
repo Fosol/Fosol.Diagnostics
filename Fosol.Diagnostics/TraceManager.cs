@@ -10,10 +10,7 @@ namespace Fosol.Diagnostics
     {
         #region Variables
         private static TraceManager _Manager;
-        private static Fosol.Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
-        private Configuration.ListenerElementCollection _SharedListeners;
-        private Configuration.SourceElementCollection _Sources;
-        private Configuration.TraceElement _Trace;
+        private Fosol.Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
         #endregion
 
         #region Properties
@@ -22,56 +19,44 @@ namespace Fosol.Diagnostics
             get { return _Manager; }
         }
 
-        internal static Configuration.DiagnosticsSection Config
+        internal Configuration.DiagnosticsSection Config
         {
             get { return _ConfigWatcher != null ? _ConfigWatcher.ConfigSection : null; }
         }
 
         internal Configuration.ListenerElementCollection SharedListeners
         {
-            get { return _SharedListeners; }
+            get { return this.Config != null ? this.Config.SharedListeners : null; }
         }
 
         internal Configuration.SourceElementCollection Sources
         {
-            get { return _Sources; }
+            get { return this.Config != null ? this.Config.Sources : null; }
         }
 
         internal Configuration.TraceElement Trace
         {
-            get 
-            {
-                if (_Trace == null)
-                    InitializeTrace();
-                return _Trace; 
-            }
+            get { return this.Config != null ? this.Config.Trace : CreateDefaultTrace(); }
         }
         #endregion
 
         #region Constructors
         static TraceManager()
         {
-            _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
-            _ConfigWatcher.Start();
             _Manager = new TraceManager();
         }
 
         internal TraceManager()
         {
-            if (TraceManager.Config != null)
-            {
-                // Reference the configuration collection.
-                _SharedListeners = TraceManager.Config.SharedListeners;
-                _Sources = TraceManager.Config.Sources;
-                _Trace = TraceManager.Config.Trace;
-            }
+            _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Configuration.DiagnosticsSection.SectionName);
+            _ConfigWatcher.Start();
         }
         #endregion
 
         #region Methods
-        private void InitializeTrace()
+        private Configuration.TraceElement CreateDefaultTrace()
         {
-            _Trace = new Configuration.TraceElement();
+            return new Configuration.TraceElement();
         }
 
         public void Dispose()

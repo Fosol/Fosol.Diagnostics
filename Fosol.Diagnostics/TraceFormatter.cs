@@ -18,10 +18,17 @@ namespace Fosol.Diagnostics
         private static readonly Fosol.Common.Caching.SimpleCache<Fosol.Common.Formatters.Keywords.FormatKeyword> _Cache = new Fosol.Common.Caching.SimpleCache<Fosol.Common.Formatters.Keywords.FormatKeyword>();
         private readonly string _Format;
         private readonly List<Fosol.Common.Formatters.Keywords.FormatKeyword> _Keywords = new List<Fosol.Common.Formatters.Keywords.FormatKeyword>();
-        private static readonly Common.Parsers.SimpleParser _Parser = new Common.Parsers.SimpleParser("{", "}");
+        private static readonly Common.Parsers.KeywordParser _Parser = new Common.Parsers.KeywordParser("{", "}");
         #endregion
 
         #region Properties
+        /// <summary>
+        /// get - The collection of FormatKeyword objects in this TraceFormatter.
+        /// </summary>
+        public List<Fosol.Common.Formatters.Keywords.FormatKeyword> Keywords
+        {
+            get { return _Keywords; }
+        }
         #endregion
 
         #region Constructors
@@ -83,7 +90,7 @@ namespace Fosol.Diagnostics
         /// <param name="parser">Common.Parsers.SimpleParser object.</param>
         /// <param name="format">Formatting string value.</param>
         /// <returns>Collection of Keywords.</returns>
-        private static IEnumerable<Fosol.Common.Formatters.Keywords.FormatKeyword> Compile(Common.Parsers.SimpleParser parser, string format)
+        private static IEnumerable<Fosol.Common.Formatters.Keywords.FormatKeyword> Compile(Common.Parsers.KeywordParser parser, string format)
         {
             var phrases = parser.Parse(format);
             var is_cached = false;
@@ -105,7 +112,7 @@ namespace Fosol.Diagnostics
                 else
                 {
                     // Determine the appropriate Keyword to use.
-                    var type = Keywords.FormatKeywordLibrary.Get(key.Name);
+                    var type = Fosol.Diagnostics.Keywords.FormatKeywordLibrary.Get(key.Name);
 
                     var is_static = typeof(Fosol.Common.Formatters.Keywords.FormatStaticKeyword).IsAssignableFrom(type);
                     var is_dynamic = typeof(Fosol.Common.Formatters.Keywords.FormatDynamicKeyword).IsAssignableFrom(type);

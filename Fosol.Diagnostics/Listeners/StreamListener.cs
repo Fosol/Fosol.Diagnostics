@@ -1,6 +1,8 @@
-﻿using Fosol.Common.Extensions.Strings;
+﻿using Fosol.Common.Extensions.Objects;
+using Fosol.Common.Extensions.Strings;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +18,7 @@ namespace Fosol.Diagnostics.Listeners
     {
         #region Variables
         private Stream _Writer;
+        private bool _UseData;
         #endregion
 
         #region Properties
@@ -26,6 +29,18 @@ namespace Fosol.Diagnostics.Listeners
         {
             get { return _Writer; }
             set { _Writer = value; }
+        }
+
+        /// <summary>
+        /// get/set - Controls what will be written to the stream.
+        /// If UseData = 'true' it will write the TraceEvent.Data property to the stream instead of the rendered message.
+        /// </summary>
+        [DefaultValue(false)]
+        [TraceSetting("UseData")]
+        public bool UseData
+        {
+            get { return _UseData; }
+            set { _UseData = value; }
         }
         #endregion
 
@@ -51,22 +66,45 @@ namespace Fosol.Diagnostics.Listeners
 
         #region Methods
         /// <summary>
-        /// Write the message to this listener.
-        /// First convert the message into a byte array using the Encoding.
-        /// </summary>
-        /// <param name="message">The message to write.</param>
-        public override void Write(string message)
-        {
-            this.Write(message.ToByteArray(this.Encoding));
-        }
-
-        /// <summary>
         /// Write the data to the listener stream.
         /// </summary>
-        /// <param name="data">Data to write to the stream.</param>
-        public override void Write(byte[] data)
+        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
+        protected override void OnWrite(TraceEvent traceEvent)
         {
-            this.Writer.Write(data, 0, data.Length);
+            try
+            {
+                if (!this.UseData)
+                {
+                    var message = this.Render(traceEvent);
+                    if (message != null)
+                    {
+                        var bytes = message.ToByteArray(this.Encoding);
+                        this.Writer.Write(bytes, 0, bytes.Length);
+                    }
+                }
+                else if (traceEvent.Data != null)
+                {
+                    if (traceEvent.Data is byte[])
+                    {
+                        var data = traceEvent.Data as byte[];
+                        if (data != null)
+                        {
+                            this.Writer.Write(data, 0, data.Length);
+                        }
+                    }
+                    else
+                    {
+                        var data = traceEvent.Data.ToByteArray();
+                        if (data != null)
+                        {
+                            this.Writer.Write(data, 0, data.Length);
+                        }
+                    }
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
 
         /// <summary>
@@ -75,7 +113,16 @@ namespace Fosol.Diagnostics.Listeners
         public override void Close()
         {
             if (this.Writer != null)
-                this.Writer.Close();
+            {
+                try
+                {
+                    this.Writer.Close();
+                    this.Writer = null;
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -84,7 +131,15 @@ namespace Fosol.Diagnostics.Listeners
         public override void Flush()
         {
             if (this.Writer != null)
-                this.Writer.Flush();
+            {
+                try
+                {
+                    this.Writer.Flush();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -95,7 +150,6 @@ namespace Fosol.Diagnostics.Listeners
             if (this.Writer != null)
             {
                 Close();
-                this.Writer = null;
             }
         }
         #endregion

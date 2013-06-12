@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
+    /// <summary>
+    /// The DatabaseListener provides a simple way to execute SQL commands every write.
+    /// </summary>
     public class DatabaseListener
         : TraceListener
     {
@@ -93,16 +96,23 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Methods
-        public override void Initialize()
-        {
-        }
-
+        /// <summary>
+        /// Open a connection to the database.
+        /// </summary>
+        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <returns>'True' if the listener should continue to write.</returns>
         protected override bool OnBeforeWrite(TraceEvent traceEvent)
         {
-            OpenConnection();
-            return base.OnBeforeWrite(traceEvent);
+            if (OpenConnection())
+                return base.OnBeforeWrite(traceEvent);
+
+            return false;
         }
 
+        /// <summary>
+        /// Executes the CommandText.
+        /// </summary>
+        /// <param name="traceEvent">TraceEvent object containing information for the listener.</param>
         protected override void OnWrite(TraceEvent traceEvent)
         {
             if (_ProviderFactory.CanCreateDataSourceEnumerator)
@@ -124,6 +134,10 @@ namespace Fosol.Diagnostics.Listeners
             }
         }
 
+        /// <summary>
+        /// Close the connection if KeepOpen = false.
+        /// </summary>
+        /// <param name="traceEvent">TraceEvent object.</param>
         protected override void OnAfterWrite(TraceEvent traceEvent)
         {
             base.OnAfterWrite(traceEvent);
@@ -133,23 +147,40 @@ namespace Fosol.Diagnostics.Listeners
                 _ActiveConnection.Close();
         }
 
-        protected void OpenConnection()
+        /// <summary>
+        /// Attempts to open the connection to the database.
+        /// </summary>
+        /// <returns>'True' if there is a successul open connection to the database.</returns>
+        protected bool OpenConnection()
         {
-            if (_ActiveConnection == null)
+            try
             {
-                _ProviderFactory = DbProviderFactories.GetFactory(this.ProviderName);
-                if (_ProviderFactory.CanCreateDataSourceEnumerator)
+                if (_ActiveConnection == null)
                 {
-                    var cs = System.Configuration.ConfigurationManager.ConnectionStrings[this.ConnectionString] ?? new System.Configuration.ConnectionStringSettings("default", this.ConnectionString);
-                    _ActiveConnection = _ProviderFactory.CreateConnection();
-                    _ActiveConnection.ConnectionString = cs.ConnectionString;
-                    _ActiveConnection.Open();
+                    _ProviderFactory = DbProviderFactories.GetFactory(this.ProviderName);
+                    if (_ProviderFactory.CanCreateDataSourceEnumerator)
+                    {
+                        var cs = System.Configuration.ConfigurationManager.ConnectionStrings[this.ConnectionString] ?? new System.Configuration.ConnectionStringSettings("default", this.ConnectionString);
+                        _ActiveConnection = _ProviderFactory.CreateConnection();
+                        _ActiveConnection.ConnectionString = cs.ConnectionString;
+                        _ActiveConnection.Open();
+                        return true;
+                    }
                 }
+                else if (_ActiveConnection.State == System.Data.ConnectionState.Closed)
+                {
+                    _ActiveConnection.Open();
+                    return true;
+                }
+                else
+                    return true;
             }
-            else if (_ActiveConnection.State == System.Data.ConnectionState.Closed)
+            catch (DbException)
             {
-                _ActiveConnection.Open();
+                return false;
             }
+
+            return false;
         }
         #endregion
 

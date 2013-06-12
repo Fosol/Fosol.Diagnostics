@@ -11,7 +11,7 @@ namespace Fosol.Diagnostics.TestConsole
         static void Main(string[] args)
         {
             var stop = false;
-            var log = Fosol.Diagnostics.TraceManager.GetWriter();
+            var log = Fosol.Diagnostics.TraceManager.GetWriter(typeof(Program));
 
             do
             {

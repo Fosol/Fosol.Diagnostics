@@ -12,11 +12,12 @@ namespace Fosol.Diagnostics
     public sealed class TraceEvent
     {
         #region Variables
-        private string _Source;
-        private string _Message;
-        private System.DateTime _DateTime;
         private TraceEventType _EventType;
+        private System.DateTime _DateTime;
         private int _Id;
+        private string _Source;
+        private Type _SourceType;
+        private string _Message;
         private object _Data;
         private TraceEventThread _Thread;
         private TraceEventProcess _Process;
@@ -26,12 +27,12 @@ namespace Fosol.Diagnostics
 
         #region Properties
         /// <summary>
-        /// get/set - The source of the TraceEvent.
+        /// get - The TraceEventType value.
         /// </summary>
-        public string Source
+        public TraceEventType EventType
         {
-            get { return _Source; }
-            set { _Source = value; }
+            get { return _EventType; }
+            private set { _EventType = value; }
         }
 
         /// <summary>
@@ -40,23 +41,34 @@ namespace Fosol.Diagnostics
         public DateTime DateTime
         {
             get { return _DateTime; }
+            private set { _DateTime = value; }
         }
 
         /// <summary>
-        /// get - The TraceEventType value.
-        /// </summary>
-        public TraceEventType EventType
-        {
-            get { return _EventType; }
-        }
-
-        /// <summary>
-        /// get/set - The identity of the TraceEvent.
+        /// get - The identity of the TraceEvent.
         /// </summary>
         public int Id
         {
             get { return _Id; }
-            set { _Id = value; }
+            private set { _Id = value; }
+        }
+
+        /// <summary>
+        /// get - The source of the TraceEvent.
+        /// </summary>
+        public string Source
+        {
+            get { return _Source; }
+            private set { _Source = value; }
+        }
+
+        /// <summary>
+        /// get - The originating source type.
+        /// </summary>
+        public Type SourceType
+        {
+            get { return _SourceType; }
+            private set { _SourceType = value; }
         }
 
         /// <summary>
@@ -83,6 +95,7 @@ namespace Fosol.Diagnostics
         public TraceEventThread Thread
         {
             get { return _Thread; }
+            private set { _Thread = value; }
         }
 
         /// <summary>
@@ -91,6 +104,7 @@ namespace Fosol.Diagnostics
         public TraceEventProcess Process
         {
             get { return _Process; }
+            private set { _Process = value; }
         }
 
         /// <summary>
@@ -99,6 +113,7 @@ namespace Fosol.Diagnostics
         public string StackTrace
         {
             get { return _StackTrace; }
+            private set { _StackTrace = value; }
         }
 
         /// <summary>
@@ -107,6 +122,7 @@ namespace Fosol.Diagnostics
         public Stack ActivityStackTrace
         {
             get { return _ActivityStackTrace; }
+            private set { _ActivityStackTrace = value; }
         }
         #endregion
 
@@ -117,10 +133,60 @@ namespace Fosol.Diagnostics
         /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
         /// <param name="message">Information about the reason for the TraceEvent.</param>
         public TraceEvent(TraceEventType eventType, string message)
+            : this(eventType, 0, null, null, message)
         {
-            _DateTime = Fosol.Common.Optimization.FastDateTime.UtcNow;
-            _EventType = eventType;
-            _Message = message;
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="message">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, string message)
+            : this(eventType, id, null, null, message)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="source">Source of the message and filter for listeners.</param>
+        /// <param name="message">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, string source, string message)
+            : this(eventType, 0, source, null, message)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="source">Source of the message and filter for listeners.</param>
+        /// <param name="message">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, string source, string message)
+            : this(eventType, id, source, null, message)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="source">Source of the message and filter for listeners.</param>
+        /// <param name="sourceType">The source Type that is sending this message.</param>
+        /// <param name="message">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, string source, Type sourceType, string message)
+        {
+            this.DateTime = Fosol.Common.Optimization.FastDateTime.UtcNow;
+            this.EventType = eventType;
+            this.Id = id;
+            this.Source = source;
+            this.SourceType = sourceType;
+            this.Message = message;
         }
         #endregion
 

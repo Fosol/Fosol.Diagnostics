@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
     <Compile Include="Filters\DefaultFilter.cs" />
     <Compile Include="Keywords\CallStackKeyword.cs" />
+    <Compile Include="Keywords\SourceTypeKeyword.cs" />
     <Compile Include="Keywords\DateTimeKeyword.cs" />
     <Compile Include="Keywords\EventTypeKeyword.cs" />
     <Compile Include="Keywords\IdKeyword.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Listeners\ColoredConsoleListener.cs" />
     <Compile Include="Listeners\DatabaseListener.cs" />
     <Compile Include="Listeners\EventLogListener.cs" />
+    <Compile Include="Listeners\MailListener.cs" />
     <Compile Include="Listeners\StreamListener.cs" />
     <Compile Include="Listeners\DefaultListener.cs" />
     <Compile Include="Listeners\TextFileListener.cs" />

@@ -12,58 +12,58 @@ namespace Fosol.Diagnostics.Configuration
     {
         #region Variables
         public const string SectionName = "fosol.diagnostics";
-        private const string XmlnsKey = "xmlns";
-        private const string SharedListenersKey = "sharedListeners";
-        private const string FiltersKey = "filters";
-        private const string SourcesKey = "sources";
-        private const string TraceKey = "trace";
-        private const string ThrowExceptionsKey = "throwExceptions";
+        private const string _XmlnsKey = "xmlns";
+        private const string _ThrowExceptionsKey = "throwExceptions";
+        private const string _SharedListenersKey = "sharedListeners";
+        private const string _FiltersKey = "filters";
+        private const string _SourcesKey = "sources";
+        private const string _TraceKey = "trace";
         #endregion
 
         #region Properties
         /// <summary>
         /// get/set - The default xml namespace.
         /// </summary>
-        [ConfigurationProperty(XmlnsKey)]
+        [ConfigurationProperty(_XmlnsKey)]
         public string Xmlns
         {
-            get { return (string)this[XmlnsKey]; }
-            set { this[XmlnsKey] = value; }
+            get { return (string)this[_XmlnsKey]; }
+            set { this[_XmlnsKey] = value; }
         }
 
-        [ConfigurationProperty(ThrowExceptionsKey, DefaultValue = false)]
+        [ConfigurationProperty(_ThrowExceptionsKey, DefaultValue = false)]
         public bool ThrowExceptions
         {
-            get { return (bool)base[ThrowExceptionsKey]; }
-            set { base[ThrowExceptionsKey] = value; }
+            get { return (bool)base[_ThrowExceptionsKey]; }
+            set { base[_ThrowExceptionsKey] = value; }
         }
 
-        [ConfigurationProperty(SharedListenersKey)]
+        [ConfigurationProperty(_SharedListenersKey)]
         public ListenerElementCollection SharedListeners
         {
-            get { return (ListenerElementCollection)base[SharedListenersKey]; }
-            set { base[SharedListenersKey] = value; }
+            get { return (ListenerElementCollection)base[_SharedListenersKey]; }
+            set { base[_SharedListenersKey] = value; }
         }
 
-        [ConfigurationProperty(FiltersKey)]
+        [ConfigurationProperty(_FiltersKey)]
         public FilterElementCollection Filters
         {
-            get { return (FilterElementCollection)base[FiltersKey]; }
-            set { base[FiltersKey] = value; }
+            get { return (FilterElementCollection)base[_FiltersKey]; }
+            set { base[_FiltersKey] = value; }
         }
 
-        [ConfigurationProperty(SourcesKey)]
+        [ConfigurationProperty(_SourcesKey)]
         public SourceElementCollection Sources
         {
-            get { return (SourceElementCollection)base[SourcesKey]; }
-            set { base[SourcesKey] = value; }
+            get { return (SourceElementCollection)base[_SourcesKey]; }
+            set { base[_SourcesKey] = value; }
         }
 
-        [ConfigurationProperty(TraceKey)]
+        [ConfigurationProperty(_TraceKey)]
         public TraceElement Trace
         {
-            get { return (TraceElement)base[TraceKey]; }
-            set { base[TraceKey] = value; }
+            get { return (TraceElement)base[_TraceKey]; }
+            set { base[_TraceKey] = value; }
         }
         #endregion
 

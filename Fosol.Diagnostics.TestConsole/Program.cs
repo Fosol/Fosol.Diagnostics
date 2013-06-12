@@ -23,13 +23,14 @@ namespace Fosol.Diagnostics.TestConsole
                 log.Write(TraceEventType.Critical, "Critical");
                 log.Write(TraceEventType.Stop, "Stop");
                 var key = Console.ReadKey();
+                Console.WriteLine();
 
                 if (key.Key == ConsoleKey.Escape)
                     stop = true;
             }
             while (!stop);
 
-            log.Flush();
+            //log.Flush();
         }
     }
 }

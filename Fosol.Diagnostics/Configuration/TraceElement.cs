@@ -10,40 +10,43 @@ namespace Fosol.Diagnostics.Configuration
         : ConfigurationElement
     {
         #region Variables
-        private const string ListenersKey = "listeners";
-        private const string AutoFlushKey = "autoFlush";
-        private const string AutoRefreshKey = "autoRefresh";
+        private const string _ListenersKey = "listeners";
+        private const string _AutoFlushKey = "autoFlush";
+        private const string _FlushOnExitKey = "flushOnExit";
         #endregion
 
         #region Properties
 
-        [ConfigurationProperty(ListenersKey)]
+        [ConfigurationProperty(_ListenersKey)]
         public ListenerElementCollection Listeners
         {
-            get { return (ListenerElementCollection)base[ListenersKey]; }
-            set { base[ListenersKey] = value; }
+            get { return (ListenerElementCollection)base[_ListenersKey]; }
+            set { base[_ListenersKey] = value; }
         }
 
-        [ConfigurationProperty(AutoFlushKey, DefaultValue = false)]
+        [ConfigurationProperty(_AutoFlushKey, DefaultValue = false)]
         public bool AutoFlush
         {
-            get { return (bool)base[AutoFlushKey]; }
-            set { base[AutoFlushKey] = value; }
+            get { return (bool)base[_AutoFlushKey]; }
+            set { base[_AutoFlushKey] = value; }
         }
 
-        [ConfigurationProperty(AutoRefreshKey, DefaultValue = false)]
-        public bool AutoRefresh
+        [ConfigurationProperty(_FlushOnExitKey, DefaultValue = false)]
+        public bool FlushOnExit
         {
-            get { return (bool)base[AutoRefreshKey]; }
-            set { base[AutoRefreshKey] = value; }
+            get { return (bool)base[_FlushOnExitKey]; }
+            set { base[_FlushOnExitKey] = value; }
         }
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of TraceElement.
+        /// </summary>
         internal TraceElement()
         {
             this.AutoFlush = false;
-            this.AutoRefresh = false;
+            this.FlushOnExit = false;
         }
         #endregion
 

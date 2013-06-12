@@ -10,23 +10,23 @@ namespace Fosol.Diagnostics.Configuration
         : ConfigurationElement
     {
         #region Variables
-        private const string NameKey = "name";
-        private const string ValueKey = "value";
+        private const string _NameKey = "name";
+        private const string _ValueKey = "value";
         #endregion
 
         #region Properties
-        [ConfigurationProperty(NameKey, IsRequired = true, IsKey = true)]
+        [ConfigurationProperty(_NameKey, IsRequired = true, IsKey = true)]
         public string Name
         {
-            get { return (string)base[NameKey]; }
-            set { base[NameKey] = value; }
+            get { return (string)base[_NameKey]; }
+            set { base[_NameKey] = value; }
         }
 
-        [ConfigurationProperty(ValueKey, IsRequired = true)]
+        [ConfigurationProperty(_ValueKey, IsRequired = true)]
         public string Value
         {
-            get { return (string)base[ValueKey]; }
-            set { base[ValueKey] = value; }
+            get { return (string)base[_ValueKey]; }
+            set { base[_ValueKey] = value; }
         }
         #endregion
 

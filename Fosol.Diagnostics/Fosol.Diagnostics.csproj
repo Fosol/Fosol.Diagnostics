@@ -60,9 +60,9 @@
     <Compile Include="Keywords\TraceKeywordLibrary.cs" />
     <Compile Include="Keywords\LogicalOperationStackKeyword.cs" />
     <Compile Include="Keywords\MessageKeyword.cs" />
-    <Compile Include="Keywords\ProcessIdKeyword.cs" />
+    <Compile Include="Keywords\ProcessKeyword.cs" />
     <Compile Include="Keywords\SourceKeyword.cs" />
-    <Compile Include="Keywords\ThreadIdKeyword.cs" />
+    <Compile Include="Keywords\ThreadKeyword.cs" />
     <Compile Include="Keywords\TimestampKeyword.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
     <Compile Include="Listeners\ColoredConsoleListener.cs" />

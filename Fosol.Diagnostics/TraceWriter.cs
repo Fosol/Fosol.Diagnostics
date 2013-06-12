@@ -8,13 +8,12 @@ namespace Fosol.Diagnostics
     /// <summary>
     /// A TraceWriter provides a way to send message to all or a subset of TraceListeners.
     /// </summary>
-    public class TraceWriter
+    public sealed class TraceWriter
         : IDisposable
     {
         #region Variables
         private string _Source;
         private Type _SourceType;
-        private Configuration.ListenerElementCollection _Listeners;
         #endregion
 
         #region Properties
@@ -41,8 +40,19 @@ namespace Fosol.Diagnostics
         /// </summary>
         internal Configuration.ListenerElementCollection Listeners
         {
-            get { return _Listeners; }
-            set { _Listeners = value; }
+            get 
+            {
+                if (!string.IsNullOrEmpty(this.Source))
+                {
+                    var source = TraceManager.Manager.Sources[this.Source];
+                    if (source != null)
+                        return source.Listeners;
+                    else
+                        return null;
+                }
+                else
+                    return TraceManager.Manager.Trace.Listeners;
+            }
         }
         #endregion
 
@@ -52,7 +62,6 @@ namespace Fosol.Diagnostics
         /// </summary>
         public TraceWriter()
         {
-            _Listeners = TraceManager.Manager.Trace.Listeners;
         }
 
         /// <summary>
@@ -60,8 +69,8 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="type"></param>
         public TraceWriter(Type type)
-            : this()
         {
+            Fosol.Common.Validation.Assert.IsNotNull(type, "type");
             this.SourceType = type;
         }
 
@@ -72,19 +81,14 @@ namespace Fosol.Diagnostics
         /// <param name="source">The source used to filter these messages.</param>
         public TraceWriter(string source)
         {
+            Fosol.Common.Validation.Assert.IsNotNullOrEmpty(source, "source");
             this.Source = source;
-            var config = TraceManager.Manager.Sources[source];
-
-            if (config != null)
-            {
-                _Listeners = config.Listeners;
-            }
         }
         #endregion
 
         #region Methods
         /// <summary>
-        /// Write this message to the configured listeners.
+        /// Write an information message to the configured listeners.
         /// </summary>
         /// <param name="message">Message to send to listeners.</param>
         public void Write(string message)
@@ -110,8 +114,37 @@ namespace Fosol.Diagnostics
         /// <param name="message">Message to send to listeners.</param>
         public void Write(TraceEventType eventType, int id, string message)
         {
-            TraceEvent trace_event = new TraceEvent(eventType, id, this.Source, this.SourceType, message);
-            Write(trace_event);
+            Write(new TraceEvent(eventType, id, this.Source, this.SourceType, message));
+        }
+
+        /// <summary>
+        /// Write an error message to the configured listeners.
+        /// </summary>
+        /// <param name="exception">Message to send to listeners.</param>
+        public void Write(Exception exception)
+        {
+            Write(TraceEventType.Error, 0, exception);
+        }
+
+        /// <summary>
+        /// Write this message to the configured listeners.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value.</param>
+        /// <param name="exception">Exception to send to listeners.</param>
+        public void Write(TraceEventType eventType, Exception exception)
+        {
+            Write(eventType, 0, exception);
+        }
+
+        /// <summary>
+        /// Write this message to the configured listeners.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value.</param>
+        /// <param name="id">Unique id to identify this message.</param>
+        /// <param name="exception">Exception to send to listeners.</param>
+        public void Write(TraceEventType eventType, int id, Exception exception)
+        {
+            Write(new TraceEvent(eventType, id, this.Source, this.SourceType, exception));
         }
 
         /// <summary>
@@ -122,12 +155,16 @@ namespace Fosol.Diagnostics
         {
             if (this.Listeners != null)
             {
+                var auto_flush = TraceManager.Manager.AutoFlush;
+
                 foreach (var config in this.Listeners)
                 {
                     if (config.Filter.GetFilter().ShouldTrace(traceEvent))
                     {
                         var listener = config.GetListener();
                         listener.Write(traceEvent);
+                        if (auto_flush)
+                            listener.Flush();
                     }
                 }
             }

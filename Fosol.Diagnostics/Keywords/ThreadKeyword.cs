@@ -11,11 +11,10 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Keywords
 {
     /// <summary>
-    /// SourceTypeKeyword returns the TraceEvent.SourceType value.
-    /// The SourceType is generally the Type of the class that originally sent the message to the listeners.
+    /// The ThreadKeyword provides a way to output thread information within the TraceEvent object.
     /// </summary>
-    [FormatKeyword("sourceType")]
-    public sealed class SourceTypeKeyword
+    [FormatKeyword("thread")]
+    public sealed class ThreadKeyword
         : TraceKeyword
     {
         #region Variables
@@ -23,8 +22,8 @@ namespace Fosol.Diagnostics.Keywords
         #endregion
 
         #region Properties
-        [DefaultValue("FullName")]
-        [FormatKeywordProperty("Key", new [] { "k" })]
+        [DefaultValue("Name")]
+        [FormatKeywordProperty("Key", new[] { "k" })]
         public string Key
         {
             get { return _Key; }
@@ -34,10 +33,10 @@ namespace Fosol.Diagnostics.Keywords
 
         #region Constructors
         /// <summary>
-        /// Creates a new instance of a SourceTypeKeyword object.
+        /// Creates a new instance of a ThreadKeyword object.
         /// </summary>
-        /// <param name="attributes">StringDictionary object.</param>
-        public SourceTypeKeyword(StringDictionary attributes = null)
+        /// <param name="attributes">Attributes to include with this keyword.</param>
+        public ThreadKeyword(StringDictionary attributes = null)
             : base(attributes)
         {
         }
@@ -45,25 +44,28 @@ namespace Fosol.Diagnostics.Keywords
 
         #region Methods
         /// <summary>
-        /// Generates the source text from this LogMessage object.
+        /// Returns the thread Id from the TraceEvent.
         /// </summary>
         /// <param name="traceEvent">Information object containing data for the keyword.</param>
-        /// <returns>Message Source value.</returns>
+        /// <returns>A message.</returns>
         public override string Render(TraceEvent traceEvent)
         {
-            if (traceEvent != null && traceEvent.SourceType != null)
+            if (traceEvent != null && traceEvent.Thread != null)
             {
                 var prop = (
-                    from p in traceEvent.SourceType.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    from p in traceEvent.Thread.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
                     where p.Name.Equals(this.Key, StringComparison.InvariantCulture)
                     select p).FirstOrDefault();
 
                 if (prop != null)
-                    return string.Format("{0}", prop.GetValue(traceEvent.SourceType));
+                    return string.Format("{0}", prop.GetValue(traceEvent.Thread));
             }
 
             return null;
         }
+        #endregion
+
+        #region Operators
         #endregion
 
         #region Events

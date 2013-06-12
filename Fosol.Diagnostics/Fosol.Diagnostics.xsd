@@ -97,7 +97,8 @@
     <xs:sequence minOccurs="0" maxOccurs="1">
       <xs:element name="listeners" type="listeners"/>
     </xs:sequence>
-    <xs:attribute name="autoFlush" type="xs:boolean"/>
-    <xs:attribute name="autoRefresh" type="xs:boolean"/>
+    <xs:attribute name="autoFlush" type="xs:boolean" default="false"/>
+    <xs:attribute name="autoRefresh" type="xs:boolean" default="false"/>
+    <xs:attribute name="flushOnExit" type="xs:boolean" default="false"/>
   </xs:complexType>
 </xs:schema>

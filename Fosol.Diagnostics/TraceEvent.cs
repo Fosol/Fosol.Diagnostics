@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fosol.Common.Extensions.Exceptions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -187,6 +188,75 @@ namespace Fosol.Diagnostics
             this.Source = source;
             this.SourceType = sourceType;
             this.Message = message;
+
+            this.Thread = new TraceEventThread();
+            this.Process = new TraceEventProcess();
+            this.StackTrace = Environment.StackTrace;
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="exception">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(Exception exception)
+            : this(TraceEventType.Error, 0, null, null, exception)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="exception">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, Exception exception)
+            : this(eventType, 0, null, null, exception)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="exception">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, Exception exception)
+            : this(eventType, id, null, null, exception)
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="source">Source of the message and filter for listeners.</param>
+        /// <param name="exception">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, string source, Exception exception)
+            : this(eventType, id, source, null, exception)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of TraceEvent.
+        /// </summary>
+        /// <param name="eventType">TraceEventType value to identify serverity of the TraceEvent.</param>
+        /// <param name="id">Unique id to identify this type of message.</param>
+        /// <param name="source">Source of the message and filter for listeners.</param>
+        /// <param name="sourceType">The source Type that is sending this message.</param>
+        /// <param name="exception">Information about the reason for the TraceEvent.</param>
+        public TraceEvent(TraceEventType eventType, int id, string source, Type sourceType, Exception exception)
+        {
+            this.DateTime = Fosol.Common.Optimization.FastDateTime.UtcNow;
+            this.EventType = eventType;
+            this.Id = id;
+            this.Source = source;
+            this.SourceType = sourceType;
+            this.Message = exception.ExceptionToString();
+
+            this.Thread = new TraceEventThread();
+            this.Process = new TraceEventProcess();
+            this.StackTrace = exception.StackTrace;
         }
         #endregion
 

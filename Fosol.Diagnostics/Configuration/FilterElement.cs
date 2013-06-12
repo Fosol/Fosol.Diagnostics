@@ -10,40 +10,40 @@ namespace Fosol.Diagnostics.Configuration
         : ConfigurationElement
     {
         #region Variables
-        private const string NameKey = "name";
-        private const string TypeNameKey = "type";
-        private const string InitializeKey = "initialize";
-        private const string SettingsKey = "settings";
+        private const string _NameKey = "name";
+        private const string _TypeNameKey = "type";
+        private const string _InitializeKey = "initialize";
+        private const string _SettingsKey = "settings";
         private Filters.TraceFilter _Filter;
         #endregion
 
         #region Properties
-        [ConfigurationProperty(NameKey, IsRequired = true, IsKey = true)]
+        [ConfigurationProperty(_NameKey, IsRequired = true, IsKey = true)]
         public string Name
         {
-            get { return (string)base[NameKey]; }
-            set { base[NameKey] = value; }
+            get { return (string)base[_NameKey]; }
+            set { base[_NameKey] = value; }
         }
 
-        [ConfigurationProperty(TypeNameKey, IsRequired = true, IsKey = true)]
+        [ConfigurationProperty(_TypeNameKey, IsRequired = true, IsKey = true)]
         public string TypeName
         {
-            get { return (string)base[TypeNameKey]; }
-            set { base[TypeNameKey] = value; }
+            get { return (string)base[_TypeNameKey]; }
+            set { base[_TypeNameKey] = value; }
         }
 
-        [ConfigurationProperty(InitializeKey)]
+        [ConfigurationProperty(_InitializeKey)]
         public ArgumentElementCollection Initialize
         {
-            get { return (ArgumentElementCollection)base[InitializeKey]; }
-            set { base[InitializeKey] = value; }
+            get { return (ArgumentElementCollection)base[_InitializeKey]; }
+            set { base[_InitializeKey] = value; }
         }
 
-        [ConfigurationProperty(SettingsKey)]
+        [ConfigurationProperty(_SettingsKey)]
         public ArgumentElementCollection Settings
         {
-            get { return (ArgumentElementCollection)base[SettingsKey]; }
-            set { base[SettingsKey] = value; }
+            get { return (ArgumentElementCollection)base[_SettingsKey]; }
+            set { base[_SettingsKey] = value; }
         }
         #endregion
 

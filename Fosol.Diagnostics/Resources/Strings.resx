@@ -132,8 +132,20 @@
   <data name="Configuration_Exception_Attribute_Required" xml:space="preserve">
     <value>The "{0}" attribute is required.</value>
   </data>
+  <data name="Configuration_Exception_Filter_Failed" xml:space="preserve">
+    <value>The "{0}" filter failed to be created.</value>
+  </data>
   <data name="Configuration_Exception_Filter_Initialize_Invalid" xml:space="preserve">
     <value>The "{0}" filter initialize values are invalid.</value>
+  </data>
+  <data name="Configuration_Exception_Filter_Reference_Invalid_Properties" xml:space="preserve">
+    <value>The "{0}" filter references cannot include additional properties.</value>
+  </data>
+  <data name="Configuration_Exception_Filter_Reference_Must_Exist" xml:space="preserve">
+    <value>The "{0}" filter reference must point to an existing shared filter.</value>
+  </data>
+  <data name="Configuration_Exception_Filter_Setting_Required" xml:space="preserve">
+    <value>The "{0}" filter requires the "{1}" setting attribute to be configured.</value>
   </data>
   <data name="Configuration_Exception_Filter_Type_Invalid" xml:space="preserve">
     <value>The "{0}" filter type "{1}" is not valid.</value>

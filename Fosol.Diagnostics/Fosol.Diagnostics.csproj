@@ -46,8 +46,10 @@
     <Compile Include="Converters\TraceFormatterConverter.cs" />
     <Compile Include="Events\WriteEventArgs.cs" />
     <Compile Include="Exceptions\ConfigurationListenerException.cs" />
+    <Compile Include="Exceptions\ConfigurationFilterException.cs" />
     <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
     <Compile Include="Filters\DefaultFilter.cs" />
+    <Compile Include="Filters\LevelFilter.cs" />
     <Compile Include="Keywords\CallStackKeyword.cs" />
     <Compile Include="Keywords\SourceTypeKeyword.cs" />
     <Compile Include="Keywords\DateTimeKeyword.cs" />

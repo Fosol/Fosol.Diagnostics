@@ -44,6 +44,14 @@ namespace Fosol.Diagnostics
         }
 
         /// <summary>
+        /// get - Shared filters within the configuration.
+        /// </summary>
+        internal Configuration.FilterElementCollection SharedFilters
+        {
+            get { return this.Configuration != null ? this.Configuration.SharedFilters : null; }
+        }
+
+        /// <summary>
         /// get - Source listeners within the configuration.
         /// </summary>
         internal Configuration.SourceElementCollection Sources

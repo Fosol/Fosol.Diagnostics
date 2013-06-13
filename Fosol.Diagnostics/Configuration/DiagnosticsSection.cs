@@ -15,7 +15,7 @@ namespace Fosol.Diagnostics.Configuration
         private const string _XmlnsKey = "xmlns";
         private const string _ThrowExceptionsKey = "throwExceptions";
         private const string _SharedListenersKey = "sharedListeners";
-        private const string _FiltersKey = "filters";
+        private const string _SharedFiltersKey = "sharedFilters";
         private const string _SourcesKey = "sources";
         private const string _TraceKey = "trace";
         #endregion
@@ -45,11 +45,11 @@ namespace Fosol.Diagnostics.Configuration
             set { base[_SharedListenersKey] = value; }
         }
 
-        [ConfigurationProperty(_FiltersKey)]
-        public FilterElementCollection Filters
+        [ConfigurationProperty(_SharedFiltersKey)]
+        public FilterElementCollection SharedFilters
         {
-            get { return (FilterElementCollection)base[_FiltersKey]; }
-            set { base[_FiltersKey] = value; }
+            get { return (FilterElementCollection)base[_SharedFiltersKey]; }
+            set { base[_SharedFiltersKey] = value; }
         }
 
         [ConfigurationProperty(_SourcesKey)]

@@ -11,7 +11,7 @@
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
-          <xs:element name="filters" type="filters"/>
+          <xs:element name="sharedFilters" type="filters"/>
           <xs:element name="sharedListeners" type="listeners"/>
           <xs:element name="sources" type="sources"/>
           <xs:element name="trace" type="trace"/>
@@ -35,7 +35,7 @@
         <xs:choice>
           <xs:element name="initialize" type="args" maxOccurs="1"/>
           <xs:element name="settings" type="args" maxOccurs="1"/>
-          <xs:element name="filter" type="addFilter" maxOccurs="1"/>
+          <xs:element name="filters" type="filters" maxOccurs="1"/>
         </xs:choice>
       </xs:sequence>
     </xs:sequence>

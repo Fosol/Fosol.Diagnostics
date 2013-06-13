@@ -106,11 +106,47 @@ namespace Fosol.Diagnostics.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter failed to be created..
+        /// </summary>
+        internal static string Configuration_Exception_Filter_Failed {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Filter_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The &quot;{0}&quot; filter initialize values are invalid..
         /// </summary>
         internal static string Configuration_Exception_Filter_Initialize_Invalid {
             get {
                 return ResourceManager.GetString("Configuration_Exception_Filter_Initialize_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter references cannot include additional properties..
+        /// </summary>
+        internal static string Configuration_Exception_Filter_Reference_Invalid_Properties {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Filter_Reference_Invalid_Properties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter reference must point to an existing shared filter..
+        /// </summary>
+        internal static string Configuration_Exception_Filter_Reference_Must_Exist {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Filter_Reference_Must_Exist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &quot;{0}&quot; filter requires the &quot;{1}&quot; setting attribute to be configured..
+        /// </summary>
+        internal static string Configuration_Exception_Filter_Setting_Required {
+            get {
+                return ResourceManager.GetString("Configuration_Exception_Filter_Setting_Required", resourceCulture);
             }
         }
         

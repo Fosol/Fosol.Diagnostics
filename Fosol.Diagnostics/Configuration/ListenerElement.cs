@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
+    /// <summary>
+    /// A ListenerElement provides a way to dynamically configure a TraceListener.
+    /// </summary>
     internal class ListenerElement
         : ConfigurationElement
     {
@@ -16,11 +19,14 @@ namespace Fosol.Diagnostics.Configuration
         private const string _TypeNameKey = "type";
         private const string _InitializeKey = "initialize";
         private const string _SettingsKey = "settings";
-        private const string _FilterKey = "filter";
+        private const string _FiltersKey = "filters";
         private Listeners.TraceListener _Listener;
         #endregion
 
         #region Properties
+        /// <summary>
+        /// get/set - Unique name to identify this ListenerElement.
+        /// </summary>
         [ConfigurationProperty(_NameKey, IsRequired = true, IsKey = true)]
         public string Name
         {
@@ -28,6 +34,9 @@ namespace Fosol.Diagnostics.Configuration
             set { base[_NameKey] = value; }
         }
 
+        /// <summary>
+        /// get/set - The Type of TraceListener this will create.
+        /// </summary>
         [ConfigurationProperty(_TypeNameKey)]
         public string TypeName
         {
@@ -35,6 +44,9 @@ namespace Fosol.Diagnostics.Configuration
             set { base[_TypeNameKey] = value; }
         }
 
+        /// <summary>
+        /// get/set - Constructor initialization parameters.  Used when creating the TraceListener.
+        /// </summary>
         [ConfigurationProperty(_InitializeKey)]
         public ArgumentElementCollection Initialize
         {
@@ -42,6 +54,9 @@ namespace Fosol.Diagnostics.Configuration
             set { base[_InitializeKey] = value; }
         }
 
+        /// <summary>
+        /// get/set - Property intialization parameters.  Used when creating the TraceListener.
+        /// </summary>
         [ConfigurationProperty(_SettingsKey)]
         public ArgumentElementCollection Settings
         {
@@ -49,11 +64,14 @@ namespace Fosol.Diagnostics.Configuration
             set { base[_SettingsKey] = value; }
         }
 
-        [ConfigurationProperty(_FilterKey, DefaultValue = null)]
-        public FilterElement Filter
+        /// <summary>
+        /// get/set - Collection of FilterElement objects used to filter what TraceEvents will be sent to the listeners.
+        /// </summary>
+        [ConfigurationProperty(_FiltersKey)]
+        public FilterElementCollection Filters
         {
-            get { return (FilterElement)base[_FilterKey]; }
-            set { base[_FilterKey] = value; }
+            get { return (FilterElementCollection)base[_FiltersKey]; }
+            set { base[_FiltersKey] = value; }
         }
         #endregion
 
@@ -68,9 +86,6 @@ namespace Fosol.Diagnostics.Configuration
 
             var name = this.Name;
             var type_name = this.TypeName;
-            var filter = (string.IsNullOrEmpty(this.Filter.Name) && string.IsNullOrEmpty(this.Filter.TypeName)) ? null : this.Filter;
-            var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
-            var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
             // Annoyingly an empty TraceListener is created even if one isn't configured.
             // So check for this and exit.
@@ -81,7 +96,7 @@ namespace Fosol.Diagnostics.Configuration
             if (string.IsNullOrEmpty(type_name))
             {
                 // When refrencing a SharedListener you cannot include other configuration options.
-                if (filter != null || initialize != null || settings != null)
+                if (this.Initialize.Count != 0 || this.Settings.Count != 0)
                     throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Invalid_Properties, name));
 
                 // The reference must exist in the shared listeners.
@@ -94,6 +109,12 @@ namespace Fosol.Diagnostics.Configuration
 
                 // Reference the shared listener.
                 _Listener = listener.GetListener();
+
+                // Apply the shared listener's filters to this instance.
+                if (this.Filters.Count == 0
+                    && listener.Filters.Count != 0)
+                    this.Filters = listener.Filters;
+
                 return _Listener;
             }
             // Try to create the listener as it has been defined in the configuration.
@@ -109,7 +130,6 @@ namespace Fosol.Diagnostics.Configuration
         {
             var name = this.Name;
             var type_name = this.TypeName;
-            var filter = (string.IsNullOrEmpty(this.Filter.Name) && string.IsNullOrEmpty(this.Filter.TypeName)) ? null : this.Filter;
             var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
             var settings = (this.Settings.Count == 0) ? null : this.Settings;
 

@@ -159,9 +159,9 @@ namespace Fosol.Diagnostics
 
                 foreach (var config in this.Listeners)
                 {
-                    if (config.Filter.GetFilter().ShouldTrace(traceEvent))
+                    var listener = config.GetListener();
+                    if (config.Filters.ShouldTrace(traceEvent))
                     {
-                        var listener = config.GetListener();
                         listener.Write(traceEvent);
                         if (auto_flush)
                             listener.Flush();

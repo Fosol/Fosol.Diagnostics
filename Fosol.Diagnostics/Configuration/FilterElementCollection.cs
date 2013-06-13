@@ -29,11 +29,11 @@ namespace Fosol.Diagnostics.Configuration
         {
             foreach (var filter in this)
             {
-                if (!filter.GetFilter().ShouldTrace(traceEvent))
-                    return false;
+                if (filter.GetFilter().ShouldTrace(traceEvent))
+                    return true;
             }
 
-            return true;
+            return false;
         }
         #endregion
 

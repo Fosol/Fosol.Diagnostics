@@ -273,7 +273,8 @@ namespace Fosol.Diagnostics.Listeners
         /// </summary>
         public override void Flush()
         {
-            this.File.Length += this.BufferUsed;
+            if (this.File != null)
+                this.File.Length += this.BufferUsed;
             base.Flush();
         }
 
@@ -285,12 +286,15 @@ namespace Fosol.Diagnostics.Listeners
         {
             base.Close();
 
-            // Get the file information.
-            var info = new FileInfo(this.File.FullPath);
-            if (info.Exists)
+            if (this.File != null)
             {
-                this.File.Length = info.Length;
-                this.File.LastWriteTime = info.LastWriteTime;
+                // Get the file information.
+                var info = new FileInfo(this.File.FullPath);
+                if (info.Exists)
+                {
+                    this.File.Length = info.Length;
+                    this.File.LastWriteTime = info.LastWriteTime;
+                }
             }
         }
 

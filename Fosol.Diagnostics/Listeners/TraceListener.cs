@@ -32,6 +32,8 @@ namespace Fosol.Diagnostics.Listeners
         private bool _UseEventTypeFormat;
         private Encoding _Encoding;
 
+        private WeakReference<Configuration.ListenerElement> _Config;
+
         public delegate void WriteEventHandler(object sender, Events.WriteEventArgs e);
         public event WriteEventHandler BeforeWrite;
         public event WriteEventHandler AfterWrite;
@@ -185,6 +187,41 @@ namespace Fosol.Diagnostics.Listeners
             get { return _Encoding; }
             set { _Encoding = value; }
         }
+
+        /// <summary>
+        /// get/set - A WeakReference to the configuration objects used to create this TraceListener.
+        /// </summary>
+        internal Configuration.ListenerElement Config
+        {
+            get 
+            {
+                if (_Config == null)
+                    return null;
+
+                Configuration.ListenerElement listener;
+                if (_Config.TryGetTarget(out listener))
+                    return listener;
+                return null;
+            }
+            set { _Config = new WeakReference<Configuration.ListenerElement>(value); }
+        }
+
+        /// <summary>
+        /// get - A collection of TraceFilter objects for this TraceListener.
+        /// </summary>
+        public IEnumerable<Filters.TraceFilter> Filters
+        {
+            get
+            {
+                if (_Config == null)
+                    yield return null;
+
+                foreach (var config in Config.Filters)
+                {
+                    yield return config.GetFilter();
+                }
+            }
+        }
         #endregion
 
         #region Constructors
@@ -197,6 +234,7 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Methods
+
         /// <summary>
         /// Initialize is automatically called after the listener has been contructed.
         /// Override this method if the listener requires initialization before it is used.
@@ -298,6 +336,22 @@ namespace Fosol.Diagnostics.Listeners
                 return true;
             else
                 return false;
+        }
+
+        /// <summary>
+        /// Check the TraceFilters configured for this TraceListener and test to confirm that this TraceEvent should be sent to the listener.
+        /// </summary>
+        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <returns>'True' if the TraceEvent should be sent to the listener.</returns>
+        public bool ShouldTrace(TraceEvent traceEvent)
+        {
+            foreach (var filter in this.Filters)
+            {
+                if (filter.ShouldTrace(traceEvent))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>

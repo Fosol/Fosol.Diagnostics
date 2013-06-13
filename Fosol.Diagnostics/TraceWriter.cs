@@ -38,7 +38,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - The configured listeners for this writer.
         /// </summary>
-        internal Configuration.ListenerElementCollection Listeners
+        internal Configuration.ListenerElementCollection ConfigListeners
         {
             get 
             {
@@ -52,6 +52,17 @@ namespace Fosol.Diagnostics
                 }
                 else
                     return TraceManager.Manager.Trace.Listeners;
+            }
+        }
+
+        public IEnumerable<Listeners.TraceListener> Listeners
+        {
+            get
+            {
+                foreach (var config in this.ConfigListeners)
+                {
+                    yield return config.GetListener();
+                }
             }
         }
         #endregion
@@ -157,10 +168,9 @@ namespace Fosol.Diagnostics
             {
                 var auto_flush = TraceManager.Manager.AutoFlush;
 
-                foreach (var config in this.Listeners)
+                foreach (var listener in this.Listeners)
                 {
-                    var listener = config.GetListener();
-                    if (config.Filters.ShouldTrace(traceEvent))
+                    if (listener.ShouldTrace(traceEvent))
                     {
                         listener.Write(traceEvent);
                         if (auto_flush)
@@ -177,9 +187,8 @@ namespace Fosol.Diagnostics
         {
             if (this.Listeners != null)
             {
-                foreach (var config in this.Listeners)
+                foreach (var listener in this.Listeners)
                 {
-                    var listener = config.GetListener();
                     listener.Flush();
                 }
             }
@@ -192,9 +201,8 @@ namespace Fosol.Diagnostics
         {
             if (this.Listeners != null)
             {
-                foreach (var config in this.Listeners)
+                foreach (var listener in this.Listeners)
                 {
-                    var listener = config.GetListener();
                     listener.Close();
                 }
             }
@@ -209,9 +217,8 @@ namespace Fosol.Diagnostics
 
             if (this.Listeners != null)
             {
-                foreach (var config in this.Listeners)
+                foreach (var listener in this.Listeners)
                 {
-                    var listener = config.GetListener();
                     listener.Dispose();
                 }
             }

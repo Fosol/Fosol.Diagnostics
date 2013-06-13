@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\ConfigurationFilterException.cs" />
     <Compile Include="Exceptions\TraceKeywordAttributeRequiredException.cs" />
     <Compile Include="Filters\DefaultFilter.cs" />
+    <Compile Include="Filters\EventTypeFilter.cs" />
     <Compile Include="Filters\LevelFilter.cs" />
     <Compile Include="Keywords\CallStackKeyword.cs" />
     <Compile Include="Keywords\SourceTypeKeyword.cs" />

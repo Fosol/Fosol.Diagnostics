@@ -130,6 +130,7 @@ namespace Fosol.Diagnostics.Configuration
         {
             var name = this.Name;
             var type_name = this.TypeName;
+            var filters = (this.Filters.Count == 0) ? null : this.Filters;
             var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
             var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
@@ -211,6 +212,7 @@ namespace Fosol.Diagnostics.Configuration
                     ApplyDefaults(attr, prop);
             }
 
+            _Listener.Config = this;
             // Call the Initialize method.
             _Listener.Initialize();
 

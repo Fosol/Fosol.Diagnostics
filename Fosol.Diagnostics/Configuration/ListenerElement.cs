@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Fosol.Common.Extensions.Reflection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics.Configuration
 {
@@ -15,12 +17,13 @@ namespace Fosol.Diagnostics.Configuration
         : ConfigurationElement
     {
         #region Variables
+        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private const string _NameKey = "name";
         private const string _TypeNameKey = "type";
         private const string _InitializeKey = "initialize";
         private const string _SettingsKey = "settings";
         private const string _FiltersKey = "filters";
-        private Listeners.TraceListener _Listener;
+        private Lazy<Listeners.TraceListener> _Listener;
         #endregion
 
         #region Properties
@@ -73,17 +76,39 @@ namespace Fosol.Diagnostics.Configuration
             get { return (FilterElementCollection)base[_FiltersKey]; }
             set { base[_FiltersKey] = value; }
         }
+
+        /// <summary>
+        /// get - The initialized listener based on the configuration settings.
+        /// </summary>
+        public Listeners.TraceListener Listener
+        {
+            get
+            {
+                return _Listener.Value;
+            }
+        }
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of a ListenerElement.
+        /// Initializes the Lazy listener.
+        /// </summary>
+        public ListenerElement()
+        {
+            _Listener = new Lazy<Listeners.TraceListener>(() => GetListener(), true);
+        }
         #endregion
 
         #region Methods
-        internal Listeners.TraceListener GetListener()
+        /// <summary>
+        /// Get the TraceListener for this configuration.
+        /// If the listener has already been created it will return it.
+        /// If the listener has not been created it will create it.
+        /// </summary>
+        /// <returns>The TraceListener for this configuration.</returns>
+        private Listeners.TraceListener GetListener()
         {
-            if (_Listener != null)
-                return _Listener;
-
             var name = this.Name;
             var type_name = this.TypeName;
 
@@ -103,26 +128,25 @@ namespace Fosol.Diagnostics.Configuration
                 if (TraceManager.Manager.SharedListeners == null)
                     throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
 
-                var listener = TraceManager.Manager.SharedListeners[name];
-                if (listener == null)
+                var shared = TraceManager.Manager.SharedListeners[name];
+                if (shared == null)
                     throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Reference_Must_Exist, name));
 
                 // Reference the shared listener.
-                _Listener = listener.GetListener();
+                var listener = shared.GetListener();
 
                 // Apply the shared listener's filters to this instance.
                 if (this.Filters.Count == 0
-                    && listener.Filters.Count != 0)
-                    this.Filters = listener.Filters;
+                    && shared.Filters.Count != 0)
+                    this.Filters = shared.Filters;
 
-                return _Listener;
+                return listener;
             }
             // Try to create the listener as it has been defined in the configuration.
             else
             {
                 // Initialize the listener with the arguments.
-                _Listener = CreateListener();
-                return _Listener;
+                return CreateListener();
             }
         }
 
@@ -135,6 +159,7 @@ namespace Fosol.Diagnostics.Configuration
             var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
             var type = Type.GetType(type_name);
+            Listeners.TraceListener listener = null;
 
             if (type == null)
                 throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Type_Invalid, name, type_name));
@@ -145,7 +170,7 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(new Type[0]);
 
                 if (ctor != null)
-                    _Listener = ctor.Invoke(new object[0]) as Listeners.TraceListener;
+                    listener = ctor.Invoke(new object[0]) as Listeners.TraceListener;
             }
             else
             {
@@ -168,10 +193,10 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
 
                 if (ctor != null)
-                    _Listener = ctor.Invoke(init) as Listeners.TraceListener;
+                    listener = ctor.Invoke(init) as Listeners.TraceListener;
             }
 
-            if (_Listener == null)
+            if (listener == null)
                 throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Failed, this.Name));
 
             var pinfos = (
@@ -193,49 +218,34 @@ namespace Fosol.Diagnostics.Configuration
                     {
                         if (attr.Converter != null)
                         {
-                            Common.Helpers.ReflectionHelper.SetValue(prop, _Listener, config.Value, attr.Converter);
+                            prop.SetValue2(listener, config.Value, attr.Converter);
                         }
                         else if (prop.PropertyType == typeof(string))
                         {
-                            prop.SetValue(_Listener, config.Value);
+                            prop.SetValue(listener, config.Value);
                         }
                         else
                         {
                             // Convert the configuration value to the property type.
-                            Common.Helpers.ReflectionHelper.SetValue(prop, _Listener, config.Value);
+                            prop.SetValue2(listener, config.Value);
                         }
                     }
+                    else if (attr.IsRequired)
+                        throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Setting_Required, this.Name, attr.Name));
                     else
-                        ApplyDefaults(attr, prop);
+                        prop.ApplyDefaultValue(listener, attr.Converter);
                 }
+                else if (attr.IsRequired)
+                    throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Setting_Required, this.Name, attr.Name));
                 else
-                    ApplyDefaults(attr, prop);
+                    prop.ApplyDefaultValue(listener, attr.Converter);
             }
 
-            _Listener.Config = this;
+            listener.Config = this;
             // Call the Initialize method.
-            _Listener.Initialize();
+            listener.Initialize();
 
-            return _Listener;
-        }
-
-        /// <summary>
-        /// Apply the default attribute values to the property.
-        /// </summary>
-        /// <param name="attr">TraceSettingAttribute object.</param>
-        /// <param name="prop">PropertyInfo object.</param>
-        private void ApplyDefaults(TraceSettingAttribute attr, PropertyInfo prop)
-        {
-            var attr_default = prop.GetCustomAttribute(typeof(DefaultValueAttribute), true) as DefaultValueAttribute;
-            if (attr_default != null)
-            {
-                if (attr.Converter != null)
-                    Common.Helpers.ReflectionHelper.SetValue(prop, _Listener, attr_default.Value, attr.Converter);
-                else
-                    prop.SetValue(_Listener, attr_default.Value);
-            }
-            else if (attr.IsRequired)
-                throw new Exceptions.ConfigurationListenerException(string.Format(Resources.Strings.Configuration_Exception_Listener_Setting_Required, this.Name, attr.Name));
+            return listener;
         }
         #endregion
 

@@ -20,10 +20,11 @@ namespace Fosol.Diagnostics
         private Type _SourceType;
         private string _Message;
         private object _Data;
-        private TraceEventThread _Thread;
-        private TraceEventProcess _Process;
+        private InstanceThread _Thread;
+        private InstanceProcess _Process;
         private string _StackTrace;
         private Stack _ActivityStackTrace;
+        private TraceWriter _Writer;
         #endregion
 
         #region Properties
@@ -93,7 +94,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - The thread that TraceEvent occured.
         /// </summary>
-        public TraceEventThread Thread
+        public InstanceThread Thread
         {
             get { return _Thread; }
             private set { _Thread = value; }
@@ -102,7 +103,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - The process the TraceEvent was created by.
         /// </summary>
-        public TraceEventProcess Process
+        public InstanceProcess Process
         {
             get { return _Process; }
             private set { _Process = value; }
@@ -124,6 +125,15 @@ namespace Fosol.Diagnostics
         {
             get { return _ActivityStackTrace; }
             private set { _ActivityStackTrace = value; }
+        }
+
+        /// <summary>
+        /// get - The TraceWriter that submitted the TraceEvent.
+        /// </summary>
+        public TraceWriter Writer
+        {
+            get { return _Writer; }
+            internal set { _Writer = value; }
         }
         #endregion
 
@@ -189,8 +199,8 @@ namespace Fosol.Diagnostics
             this.SourceType = sourceType;
             this.Message = message;
 
-            this.Thread = new TraceEventThread();
-            this.Process = new TraceEventProcess();
+            this.Thread = new InstanceThread();
+            this.Process = new InstanceProcess();
             this.StackTrace = Environment.StackTrace;
         }
 
@@ -254,8 +264,8 @@ namespace Fosol.Diagnostics
             this.SourceType = sourceType;
             this.Message = exception.ExceptionToString();
 
-            this.Thread = new TraceEventThread();
-            this.Process = new TraceEventProcess();
+            this.Thread = new InstanceThread();
+            this.Process = new InstanceProcess();
             this.StackTrace = exception.StackTrace;
         }
         #endregion

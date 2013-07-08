@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics
@@ -15,6 +16,7 @@ namespace Fosol.Diagnostics
         : IDisposable
     {
         #region Variables
+        private static readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private static readonly Fosol.Common.Caching.SimpleCache<Fosol.Common.Formatters.Keywords.FormatKeyword> _Cache = new Fosol.Common.Caching.SimpleCache<Fosol.Common.Formatters.Keywords.FormatKeyword>();
         private readonly string _Format;
         private readonly List<Fosol.Common.Formatters.Keywords.FormatKeyword> _Keywords = new List<Fosol.Common.Formatters.Keywords.FormatKeyword>();
@@ -39,12 +41,7 @@ namespace Fosol.Diagnostics
         public TraceFormatter(string format)
         {
             _Format = format;
-            var keywords = TraceFormatter.Compile(format);
-
-            foreach (var key in keywords)
-            {
-                _Keywords.Add(key);
-            }
+            _Keywords.AddRange(TraceFormatter.Compile(format));
         }
         #endregion
 
@@ -92,74 +89,63 @@ namespace Fosol.Diagnostics
         /// <returns>Collection of Keywords.</returns>
         private static IEnumerable<Fosol.Common.Formatters.Keywords.FormatKeyword> Compile(Common.Parsers.KeywordParser parser, string format)
         {
-            var phrases = parser.Parse(format);
-            var is_cached = false;
-
-            foreach (var phrase in phrases)
+            foreach (var part in parser.Parse(format))
             {
-                // Cached version found, return it.
-                is_cached = _Cache.ContainsKey(phrase.Text);
+                yield return _Cache.LazyGet(part.Text, () => CreateKeyword(part));
+            }
+        }
 
-                if (is_cached)
-                    yield return _Cache.Get(phrase.Text);
+        private static Fosol.Common.Formatters.Keywords.FormatKeyword CreateKeyword(Fosol.Common.Parsers.ISentencePart part)
+        {
+            var key = part as Common.Parsers.Keyword;
 
-                Fosol.Common.Formatters.Keywords.FormatKeyword keyword = null;
-                var key = phrase as Common.Parsers.Keyword;
+            if (key == null)
+                // Return a new instance of the LiteralKeyword which will contain the text value.
+                return new Fosol.Common.Formatters.Keywords.TextKeyword(part.Text);
+            else
+            {
+                // Determine the appropriate Keyword to use.
+                var type = Fosol.Diagnostics.Keywords.FormatKeywordLibrary.Get(key.Name);
 
-                if (key == null)
-                    // Return a new instance of the LiteralKeyword which will contain the text value.
-                    keyword = new Fosol.Common.Formatters.Keywords.TextKeyword(phrase.Text);
-                else
+                var is_static = typeof(Fosol.Common.Formatters.Keywords.FormatStaticKeyword).IsAssignableFrom(type);
+                var is_dynamic = typeof(Fosol.Common.Formatters.Keywords.FormatDynamicKeyword).IsAssignableFrom(type);
+
+                // Return a new instance of the Keyword.
+                if (type != null)
                 {
-                    // Determine the appropriate Keyword to use.
-                    var type = Fosol.Diagnostics.Keywords.FormatKeywordLibrary.Get(key.Name);
-
-                    var is_static = typeof(Fosol.Common.Formatters.Keywords.FormatStaticKeyword).IsAssignableFrom(type);
-                    var is_dynamic = typeof(Fosol.Common.Formatters.Keywords.FormatDynamicKeyword).IsAssignableFrom(type);
-
-                    // Return a new instance of the Keyword.
-                    if (type != null)
+                    if (is_static)
                     {
-                        if (is_static)
-                        {
-                            if (type.GetConstructor(new Type[] { typeof(string), typeof(StringDictionary) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, phrase.Text, key.Params.ToStringDictionary());
-                            else if (type.GetConstructor(new Type[] { typeof(string) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, phrase.Text);
-                            else if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
-                            else if (type.GetConstructor(new Type[0]) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type);
-                        }
-                        else if (is_dynamic)
-                        {
-                            if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatDynamicKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
-                            else if (type.GetConstructor(new Type[0]) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatDynamicKeyword)Activator.CreateInstance(type);
-                        }
-                        // If for some reason they've inherited directly from the FormatKeyword abstract class instead of the normal ones.
-                        else
-                        {
-                            if (type.GetConstructor(new Type[] { typeof(string), typeof(StringDictionary) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, phrase.Text, key.Params.ToStringDictionary());
-                            else if (type.GetConstructor(new Type[] { typeof(string) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, phrase.Text);
-                            else if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
-                            else if (type.GetConstructor(new Type[0]) != null)
-                                keyword = (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type);
-                        }
+                        if (type.GetConstructor(new Type[] { typeof(string), typeof(StringDictionary) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, part.Text, key.Params.ToStringDictionary());
+                        else if (type.GetConstructor(new Type[] { typeof(string) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, part.Text);
+                        else if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
+                        else if (type.GetConstructor(new Type[0]) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatStaticKeyword)Activator.CreateInstance(type);
                     }
+                    else if (is_dynamic)
+                    {
+                        if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatDynamicKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
+                        else if (type.GetConstructor(new Type[0]) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatDynamicKeyword)Activator.CreateInstance(type);
+                    }
+                    // If for some reason they've inherited directly from the FormatKeyword abstract class instead of the normal ones.
                     else
-                        throw new System.Configuration.ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_TraceKeyword_Does_Not_Exist, key.Name));
+                    {
+                        if (type.GetConstructor(new Type[] { typeof(string), typeof(StringDictionary) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, part.Text, key.Params.ToStringDictionary());
+                        else if (type.GetConstructor(new Type[] { typeof(string) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, part.Text);
+                        else if (type.GetConstructor(new Type[] { typeof(StringDictionary) }) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type, key.Params.ToStringDictionary());
+                        else if (type.GetConstructor(new Type[0]) != null)
+                            return (Fosol.Common.Formatters.Keywords.FormatKeyword)Activator.CreateInstance(type);
+                    }
                 }
-
-                if (!is_cached)
-                {
-                    _Cache.Add(phrase.Text, keyword);
-                    yield return keyword;
-                }
+                
+                throw new System.Configuration.ConfigurationErrorsException(string.Format(Resources.Strings.Configuration_Exception_TraceKeyword_Does_Not_Exist, key.Name));
             }
         }
 

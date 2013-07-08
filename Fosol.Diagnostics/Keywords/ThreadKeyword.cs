@@ -13,7 +13,7 @@ namespace Fosol.Diagnostics.Keywords
     /// <summary>
     /// The ThreadKeyword provides a way to output thread information within the TraceEvent object.
     /// </summary>
-    [FormatKeyword("thread")]
+    [FormatKeyword("thread", true)]
     public sealed class ThreadKeyword
         : TraceKeyword
     {

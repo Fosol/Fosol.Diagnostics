@@ -32,7 +32,7 @@ namespace Fosol.Diagnostics.Listeners
         private bool _UseEventTypeFormat;
         private Encoding _Encoding;
 
-        private WeakReference<Configuration.ListenerElement> _Config;
+        private volatile Configuration.ListenerElement _Config;
 
         public delegate void WriteEventHandler(object sender, Events.WriteEventArgs e);
         public event WriteEventHandler BeforeWrite;
@@ -193,17 +193,8 @@ namespace Fosol.Diagnostics.Listeners
         /// </summary>
         internal Configuration.ListenerElement Config
         {
-            get 
-            {
-                if (_Config == null)
-                    return null;
-
-                Configuration.ListenerElement listener;
-                if (_Config.TryGetTarget(out listener))
-                    return listener;
-                return null;
-            }
-            set { _Config = new WeakReference<Configuration.ListenerElement>(value); }
+            get { return _Config; }
+            set { _Config = value; }
         }
 
         /// <summary>
@@ -214,7 +205,7 @@ namespace Fosol.Diagnostics.Listeners
             get
             {
                 if (_Config == null)
-                    yield return null;
+                    yield break;
 
                 foreach (var config in Config.Filters)
                 {
@@ -345,6 +336,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <returns>'True' if the TraceEvent should be sent to the listener.</returns>
         public bool ShouldTrace(TraceEvent traceEvent)
         {
+            if (this.Filters.Count() == 0)
+                return true;
+
             foreach (var filter in this.Filters)
             {
                 if (filter.ShouldTrace(traceEvent))

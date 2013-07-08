@@ -8,7 +8,7 @@ namespace Fosol.Diagnostics
     /// <summary>
     /// A TraceEventProcess contains information about the process that sent the TraceEvent.
     /// </summary>
-    public sealed class TraceEventProcess
+    public sealed class InstanceProcess
     {
         #region Variables
         private int _Id;
@@ -49,7 +49,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Creates a new instance of a TraceEventProcess.
         /// </summary>
-        public TraceEventProcess()
+        public InstanceProcess()
         {
             var process = System.Diagnostics.Process.GetCurrentProcess();
             this.Id = process.Id;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics
 {
@@ -12,6 +13,7 @@ namespace Fosol.Diagnostics
         : IDisposable
     {
         #region Variables
+        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private const string _DefaultWriterKey = "fosol.diagnostics.default.writer";
         private static TraceManager _Manager;
         private Fosol.Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
@@ -107,11 +109,19 @@ namespace Fosol.Diagnostics
         /// </summary>
         internal TraceManager()
         {
-            _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Fosol.Diagnostics.Configuration.DiagnosticsSection.SectionName);
-            _ConfigWatcher.ConfigurationError += Watcher_ConfigurationError;
-            _ConfigWatcher.Start();
+            _Lock.EnterWriteLock();
+            try
+            {
+                _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Fosol.Diagnostics.Configuration.DiagnosticsSection.SectionName);
+                _ConfigWatcher.ConfigurationError += Watcher_ConfigurationError;
+                _ConfigWatcher.Start();
 
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+                AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            }
+            finally
+            {
+                _Lock.ExitWriteLock();
+            }
         }
         #endregion
 
@@ -128,15 +138,6 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Get a generic TraceWriter.
         /// </summary>
-        /// <returns>A TraceWriter object which can be used to send messages to TraceListeners.</returns>
-        public static TraceWriter GetWriter()
-        {
-            return TraceManager.Manager.GetWriterFromCache(_DefaultWriterKey);
-        }
-
-        /// <summary>
-        /// Get a generic TraceWriter.
-        /// </summary>
         /// <param name="type">A type to identify the source of the messages.</param>
         /// <returns>A TraceWriter object which can be used to send messages to TraceListeners.</returns>
         public static TraceWriter GetWriter(Type type)
@@ -148,26 +149,44 @@ namespace Fosol.Diagnostics
         /// Get a TraceWriter for the specific source.
         /// </summary>
         /// <param name="source">The source provides a way to filter messages to the appropiate listeners.</param>
+        /// <param name="type">The source Type of the TraceWriter.</param>
         /// <returns>A TraceWriter obejct which can be used to send message to source TraceListeners.</returns>
-        public static TraceWriter GetWriter(string source)
+        public static TraceWriter GetWriter(string source, Type type)
         {
-            return TraceManager.Manager.GetWriterFromCache(source);
+            return TraceManager.Manager.GetWriterFromCache(source, type);
         }
 
         /// <summary>
         /// Get the TraceWriter from cache, or create a new one and add it to the cache.
         /// </summary>
-        /// <param name="key">Unique key to identify the TraceWriter.</param>
+        /// <param name="source">Unique key to identify the TraceWriter.</param>
+        /// <param name="type">The source Type of the TraceWriter.</param>
         /// <returns>TraceWriter object.</returns>
-        private TraceWriter GetWriterFromCache(string key)
+        private TraceWriter GetWriterFromCache(string source, Type type)
         {
-            var writer = this.Writers[key];
-            if (writer != null)
-                return writer;
+            _Lock.EnterUpgradeableReadLock();
+            try
+            {
+                var writer = this.Writers[source];
+                if (writer != null)
+                    return writer;
 
-            writer = new TraceWriter();
-            this.Writers.Add(key, writer);
-            return writer;
+                _Lock.EnterWriteLock();
+                try
+                {
+                    writer = new TraceWriter(source, type);
+                    this.Writers.Add(source, writer);
+                    return writer;
+                }
+                finally
+                {
+                    _Lock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                _Lock.ExitUpgradeableReadLock();
+            }
         }
 
         /// <summary>
@@ -177,13 +196,29 @@ namespace Fosol.Diagnostics
         /// <returns>TraceWriter object.</returns>
         private TraceWriter GetWriterFromCache(Type type)
         {
-            var writer = this.Writers[type.FullName];
-            if (writer != null)
+            _Lock.EnterUpgradeableReadLock();
+            try
+            {
+                var writer = this.Writers[type.FullName];
+                if (writer != null)
                 return writer;
 
-            writer = new TraceWriter(type);
-            this.Writers.Add(type.FullName, writer);
-            return writer;
+                _Lock.EnterWriteLock();
+                try
+                {
+                    writer = new TraceWriter(type);
+                    this.Writers.Add(type.FullName, writer);
+                    return writer;
+                }
+                finally
+                {
+                    _Lock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                _Lock.ExitUpgradeableReadLock();
+            }
         }
 
         /// <summary>

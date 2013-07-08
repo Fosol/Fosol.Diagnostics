@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Fosol.Common.Extensions.Reflection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics.Configuration
 {
@@ -15,11 +17,12 @@ namespace Fosol.Diagnostics.Configuration
         : ConfigurationElement
     {
         #region Variables
+        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private const string _NameKey = "name";
         private const string _TypeNameKey = "type";
         private const string _InitializeKey = "initialize";
         private const string _SettingsKey = "settings";
-        private Filters.TraceFilter _Filter;
+        private Lazy<Filters.TraceFilter> _Filter;
         #endregion
 
         #region Properties
@@ -62,9 +65,21 @@ namespace Fosol.Diagnostics.Configuration
             get { return (ArgumentElementCollection)base[_SettingsKey]; }
             set { base[_SettingsKey] = value; }
         }
+
+        public Filters.TraceFilter Filter
+        {
+            get
+            {
+                return _Filter.Value;
+            }
+        }
         #endregion
 
         #region Constructors
+        public FilterElement()
+        {
+            _Filter = new Lazy<Filters.TraceFilter>(() => GetFilter(), true);
+        }
         #endregion
 
         #region Methods
@@ -75,9 +90,6 @@ namespace Fosol.Diagnostics.Configuration
         /// <returns>TraceFilter object.</returns>
         internal Filters.TraceFilter GetFilter()
         {
-            if (_Filter != null)
-                return _Filter;
-
             var name = this.Name;
             var type_name = this.TypeName;
 
@@ -97,20 +109,18 @@ namespace Fosol.Diagnostics.Configuration
                 if (TraceManager.Manager.SharedFilters == null)
                     throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Reference_Must_Exist, name));
 
-                var filter = TraceManager.Manager.SharedFilters[name];
-                if (filter == null)
+                var shared = TraceManager.Manager.SharedFilters[name];
+                if (shared == null)
                     throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Reference_Must_Exist, name));
 
                 // Reference the shared listener.
-                _Filter = filter.GetFilter();
-                return _Filter;
+                return shared.GetFilter();
             }
             // Try to create the listener as it has been defined in the configuration.
             else
             {
                 // Initialize the listener with the arguments.
-                _Filter = CreateFilter();
-                return _Filter;
+                return CreateFilter();
             }
         }
 
@@ -126,6 +136,7 @@ namespace Fosol.Diagnostics.Configuration
             var settings = (this.Settings.Count == 0) ? null : this.Settings;
 
             var type = Type.GetType(type_name);
+            Filters.TraceFilter filter = null;
 
             if (type == null)
                 throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Type_Invalid, name, type_name));
@@ -136,7 +147,7 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(new Type[0]);
 
                 if (ctor != null)
-                    _Filter = ctor.Invoke(new object[0]) as Filters.TraceFilter;
+                    filter = ctor.Invoke(new object[0]) as Filters.TraceFilter;
             }
             else
             {
@@ -159,10 +170,10 @@ namespace Fosol.Diagnostics.Configuration
                 var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
 
                 if (ctor != null)
-                    _Filter = ctor.Invoke(init) as Filters.TraceFilter;
+                    filter = ctor.Invoke(init) as Filters.TraceFilter;
             }
 
-            if (_Filter == null)
+            if (filter == null)
                 throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Failed, this.Name));
 
             var pinfos = (
@@ -184,49 +195,35 @@ namespace Fosol.Diagnostics.Configuration
                     {
                         if (attr.Converter != null)
                         {
-                            Common.Helpers.ReflectionHelper.SetValue(prop, _Filter, config.Value, attr.Converter);
+                            prop.SetValue2(filter, config.Value, attr.Converter);
                         }
                         else if (prop.PropertyType == typeof(string))
                         {
-                            prop.SetValue(_Filter, config.Value);
+                            prop.SetValue(filter, config.Value);
                         }
                         else
                         {
                             // Convert the configuration value to the property type.
-                            Common.Helpers.ReflectionHelper.SetValue(prop, _Filter, config.Value);
+                            prop.SetValue2(filter, config.Value);
                         }
                     }
+                    else if (attr.IsRequired)
+                        throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Setting_Required, this.Name, attr.Name));
                     else
-                        ApplyDefaults(attr, prop);
+                        prop.ApplyDefaultValue(filter, attr.Converter);
                 }
+                else if (attr.IsRequired)
+                    throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Setting_Required, this.Name, attr.Name));
                 else
-                    ApplyDefaults(attr, prop);
+                    prop.ApplyDefaultValue(filter, attr.Converter);
             }
 
             // Call the Initialize method.
-            _Filter.Initialize();
+            filter.Initialize();
 
-            return _Filter;
+            return filter;
         }
 
-        /// <summary>
-        /// Apply the default attribute values to the property.
-        /// </summary>
-        /// <param name="attr">TraceSettingAttribute object.</param>
-        /// <param name="prop">PropertyInfo object.</param>
-        private void ApplyDefaults(TraceSettingAttribute attr, PropertyInfo prop)
-        {
-            var attr_default = prop.GetCustomAttribute(typeof(DefaultValueAttribute), true) as DefaultValueAttribute;
-            if (attr_default != null)
-            {
-                if (attr.Converter != null)
-                    Common.Helpers.ReflectionHelper.SetValue(prop, _Filter, attr_default.Value, attr.Converter);
-                else
-                    prop.SetValue(_Filter, attr_default.Value);
-            }
-            else if (attr.IsRequired)
-                throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Setting_Required, this.Name, attr.Name));
-        }
         #endregion
 
         #region Operators

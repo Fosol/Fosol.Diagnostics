@@ -14,6 +14,7 @@ namespace Fosol.Diagnostics.Listeners
         : ConsoleListener
     {
         #region Variables
+        private readonly object _Lock = new object();
         private ConsoleColor _BackgroundColor;
         private ConsoleColor _DebugColor;
         private ConsoleColor _InformationColor;
@@ -157,31 +158,33 @@ namespace Fosol.Diagnostics.Listeners
         /// Updates the ForegroundColor based on the message TraceEventType.
         /// </summary>
         /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
-        protected override bool OnBeforeWrite(TraceEvent traceEvent)
+        protected override void OnWrite(TraceEvent traceEvent)
         {
-            if (traceEvent != null)
+            lock (_Lock)
             {
-                switch (traceEvent.EventType)
+                if (traceEvent != null)
                 {
-                    case (TraceEventType.Critical):
-                        Console.ForegroundColor = this.CriticalColor;
-                        break;
-                    case (TraceEventType.Debug):
-                        Console.ForegroundColor = this.DebugColor;
-                        break;
-                    case (TraceEventType.Error):
-                        Console.ForegroundColor = this.ErrorColor;
-                        break;
-                    case (TraceEventType.Warning):
-                        Console.ForegroundColor = this.WarningColor;
-                        break;
-                    default:
-                        Console.ForegroundColor = this.InformationColor;
-                        break;
+                    switch (traceEvent.EventType)
+                    {
+                        case (TraceEventType.Critical):
+                            Console.ForegroundColor = this.CriticalColor;
+                            break;
+                        case (TraceEventType.Debug):
+                            Console.ForegroundColor = this.DebugColor;
+                            break;
+                        case (TraceEventType.Error):
+                            Console.ForegroundColor = this.ErrorColor;
+                            break;
+                        case (TraceEventType.Warning):
+                            Console.ForegroundColor = this.WarningColor;
+                            break;
+                        default:
+                            Console.ForegroundColor = this.InformationColor;
+                            break;
+                    }
                 }
+                base.OnWrite(traceEvent);
             }
-
-            return base.OnBeforeWrite(traceEvent);
         }
         #endregion
 

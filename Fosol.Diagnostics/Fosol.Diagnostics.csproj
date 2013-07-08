@@ -77,8 +77,8 @@
     <Compile Include="Listeners\TextFileListener.cs" />
     <Compile Include="Listeners\TextWriterListener.cs" />
     <Compile Include="TraceEvent.cs" />
-    <Compile Include="TraceEventProcess.cs" />
-    <Compile Include="TraceEventThread.cs" />
+    <Compile Include="InstanceProcess.cs" />
+    <Compile Include="InstanceThread.cs" />
     <Compile Include="TraceEventType.cs" />
     <Compile Include="Filters\TraceFilter.cs" />
     <Compile Include="TraceFormatter.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics
 {
@@ -12,8 +13,11 @@ namespace Fosol.Diagnostics
         : IDisposable
     {
         #region Variables
+        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private string _Source;
         private Type _SourceType;
+        private InstanceProcess _WriterProcess;
+        private InstanceThread _WriterThread;
         #endregion
 
         #region Properties
@@ -38,7 +42,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - The configured listeners for this writer.
         /// </summary>
-        internal Configuration.ListenerElementCollection ConfigListeners
+        internal Configuration.ListenerElementCollection Config
         {
             get 
             {
@@ -55,15 +59,33 @@ namespace Fosol.Diagnostics
             }
         }
 
+        /// <summary>
+        /// get - A collection of the listeners initialized from the configuration.
+        /// </summary>
         public IEnumerable<Listeners.TraceListener> Listeners
         {
             get
             {
-                foreach (var config in this.ConfigListeners)
+                if (this.Config == null)
+                    yield break;
+
+                foreach (var config in this.Config)
                 {
-                    yield return config.GetListener();
+                    yield return config.Listener;
                 }
             }
+        }
+
+        public InstanceProcess WriterProcess
+        {
+            get { return _WriterProcess; }
+            private set { _WriterProcess = value; }
+        }
+
+        public InstanceThread WriterThread
+        {
+            get { return _WriterThread; }
+            private set { _WriterThread = value; }
         }
         #endregion
 
@@ -71,14 +93,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Creates a new instance of TraceWriter.
         /// </summary>
-        public TraceWriter()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of TraceWriter.
-        /// </summary>
-        /// <param name="type"></param>
+        /// <param name="type">The Type of object submitting TraceEvents.</param>WWWWWWWWWWWW
         public TraceWriter(Type type)
         {
             Fosol.Common.Validation.Assert.IsNotNull(type, "type");
@@ -90,10 +105,15 @@ namespace Fosol.Diagnostics
         /// This will only send message to listeners configured for this source.
         /// </summary>
         /// <param name="source">The source used to filter these messages.</param>
-        public TraceWriter(string source)
+        /// <param name="type">The Type of object submitting TraceEvents.</param>
+        public TraceWriter(string source, Type type)
         {
             Fosol.Common.Validation.Assert.IsNotNullOrEmpty(source, "source");
+            Fosol.Common.Validation.Assert.IsNotNull(type, "type");
             this.Source = source;
+            this.SourceType = type;
+            this.WriterThread = new InstanceThread();
+            this.WriterProcess = new InstanceProcess();
         }
         #endregion
 
@@ -167,6 +187,7 @@ namespace Fosol.Diagnostics
             if (this.Listeners != null)
             {
                 var auto_flush = TraceManager.Manager.AutoFlush;
+                traceEvent.Writer = this;
 
                 foreach (var listener in this.Listeners)
                 {

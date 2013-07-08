@@ -9,7 +9,7 @@ namespace Fosol.Diagnostics
     /// <summary>
     /// A TraceEventThread provides a way to capture thread information.
     /// </summary>
-    public sealed class TraceEventThread
+    public sealed class InstanceThread
     {
         #region Variables
         private int _Id;
@@ -45,7 +45,7 @@ namespace Fosol.Diagnostics
         #endregion
 
         #region Constructors
-        public TraceEventThread()
+        public InstanceThread()
         {
             var thread = Thread.CurrentThread;
             this.Id = thread.ManagedThreadId;

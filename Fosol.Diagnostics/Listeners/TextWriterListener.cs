@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
@@ -139,15 +138,15 @@ namespace Fosol.Diagnostics.Listeners
 
         #region Methods
         /// <summary>
-        /// Write the message to this listener.
+        /// Write the TraceEvent message to the TextWriter stream.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
-        protected override void OnWrite(TraceEvent traceEvent)
+        /// <param name="trace">TraceEvent object.</param>
+        protected override void OnWrite(TraceEvent trace)
         {
             if (this.Writer == null)
                 return;
 
-            var message = this.Render(traceEvent);
+            var message = this.Render(trace);
             try
             {
                 var length = this.Encoding.GetByteCount(message);
@@ -170,25 +169,6 @@ namespace Fosol.Diagnostics.Listeners
         }
 
         /// <summary>
-        /// Close the stream.
-        /// </summary>
-        public override void Close()
-        {
-            if (this.Writer != null)
-            {
-                try
-                {
-                    this.Writer.Close();
-                    this.Writer = null;
-                    this.BufferUsed = 0;
-                }
-                catch (ObjectDisposedException)
-                {
-                }
-            }
-        }
-
-        /// <summary>
         /// Flush the stream.
         /// </summary>
         public override void Flush()
@@ -199,6 +179,25 @@ namespace Fosol.Diagnostics.Listeners
                 {
                     this.Writer.Flush();
                     // Reset the buffer.
+                    this.BufferUsed = 0;
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
+        }
+
+        /// <summary>
+        /// Close the stream.
+        /// </summary>
+        public override void Close()
+        {
+            if (this.Writer != null)
+            {
+                try
+                {
+                    this.Writer.Close();
+                    this.Writer = null;
                     this.BufferUsed = 0;
                 }
                 catch (ObjectDisposedException)

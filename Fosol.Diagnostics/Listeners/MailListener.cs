@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Fosol.Common.Parsers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
@@ -10,10 +12,9 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Listeners
 {
     /// <summary>
-    /// The MailListener sends a mail message with the Smtp client.
-    /// This is a basic mailer and will send a message every single write.
+    /// Provides a way to send a TraceEvent over email.
     /// </summary>
-    public class MailListener
+    public sealed class MailListener
         : TraceListener
     {
         #region Variables
@@ -24,12 +25,12 @@ namespace Fosol.Diagnostics.Listeners
         private SmtpAuthenticationMode _SmtpAuthentication;
         private string _UserName;
         private string _Password;
-        private TraceFormatter _From;
-        private TraceFormatter _To;
-        private TraceFormatter _CC;
-        private TraceFormatter _BCC;
-        private TraceFormatter _Subject;
-        private TraceFormatter _Body;
+        private Format _From;
+        private Format _To;
+        private Format _CC;
+        private Format _BCC;
+        private Format _Subject;
+        private Format _Body;
         private bool _IsBodyHtml;
         private MailPriority _Priority;
 
@@ -57,7 +58,8 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Smtp client host name.
         /// </summary>
-        [TraceSetting("Host", true)]
+        [TraceSetting("Host")]
+        [Required(AllowEmptyStrings = false)]
         public string SmtpHost
         {
             get { return _SmtpHost; }
@@ -130,8 +132,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Who the mail is from.
         /// </summary>
-        [TraceSetting("From", true, typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter From
+        [TraceSetting("From", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        [Required(AllowEmptyStrings = false)]
+        public Format From
         {
             get { return _From; }
             set { _From = value; }
@@ -140,8 +143,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Who the mail is being sent to.
         /// </summary>
-        [TraceSetting("To", true, typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter To
+        [TraceSetting("To", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        [Required(AllowEmptyStrings = false)]
+        public Format To
         {
             get { return _To; }
             set { _To = value; }
@@ -150,8 +154,8 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Who the mail is being cc'ed to.
         /// </summary>
-        [TraceSetting("CC", typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter CC
+        [TraceSetting("CC", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        public Format CC
         {
             get { return _CC; }
             set { _CC = value; }
@@ -160,8 +164,8 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Who the mail is being bcc'ed to.
         /// </summary>
-        [TraceSetting("BCC", typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter BCC
+        [TraceSetting("BCC", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        public Format BCC
         {
             get { return _BCC; }
             set { _BCC = value; }
@@ -170,8 +174,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - The mail subject.
         /// </summary>
-        [TraceSetting("Subject", true, typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter Subject
+        [TraceSetting("Subject", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        [Required(AllowEmptyStrings = false)]
+        public Format Subject
         {
             get { return _Subject; }
             set { _Subject = value; }
@@ -180,8 +185,9 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - The mail body formatter.
         /// </summary>
-        [TraceSetting("Body", true, typeof(Converters.TraceFormatterConverter))]
-        public TraceFormatter Body
+        [TraceSetting("Body", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
+        [Required(AllowEmptyStrings = false)]
+        public Format Body
         {
             get { return _Body; }
             set { _Body = value; }
@@ -212,41 +218,40 @@ namespace Fosol.Diagnostics.Listeners
 
         #region Constructors
         #endregion
-
         #region Methods
         /// <summary>
         /// Sends a mail message with the Smtp client.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object containing information sent to the listener.</param>
-        protected override void OnWrite(TraceEvent traceEvent)
+        /// <param name="trace">TraceEvent object containing information sent to the listener.</param>
+        protected override void OnWrite(TraceEvent trace)
         {
-            SendMessage(CreateMessage(traceEvent));
+            SendMessage(CreateMessage(trace));
         }
 
         /// <summary>
         /// Creates a MailMessage based on the TraceEvent information.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
+        /// <param name="trace">TraceEvent object.</param>
         /// <returns>A new MailMessage object.</returns>
-        private MailMessage CreateMessage(TraceEvent traceEvent)
+        private MailMessage CreateMessage(TraceEvent trace)
         {
-            var from = new MailAddress(this.From.Render(traceEvent));
-            var to = new MailAddress(this.To.Render(traceEvent));
+            var from = new MailAddress(this.From.Render(trace));
+            var to = new MailAddress(this.To.Render(trace));
             var mail = new MailMessage(from, to);
 
-            var cc = this.CC.Render(traceEvent);
+            var cc = this.CC.Render(trace);
             if (!string.IsNullOrEmpty(cc))
                 mail.CC.Add(new MailAddress(cc));
 
-            var bcc = this.BCC.Render(traceEvent);
+            var bcc = this.BCC.Render(trace);
             if (!string.IsNullOrEmpty(bcc))
                 mail.Bcc.Add(new MailAddress(bcc));
 
             mail.Priority = this.Priority;
-            mail.Subject = this.Subject.Render(traceEvent);
+            mail.Subject = this.Subject.Render(trace);
             mail.SubjectEncoding = this.Encoding;
             mail.IsBodyHtml = this.IsBodyHtml;
-            mail.Body = this.Body.Render(traceEvent);
+            mail.Body = this.Body.Render(trace);
             mail.BodyEncoding = this.Encoding;
 
             return mail;

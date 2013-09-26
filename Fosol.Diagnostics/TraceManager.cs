@@ -1,181 +1,411 @@
-﻿using System;
+﻿using Fosol.Common.Caching;
+using Fosol.Common.Extensions.Events;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Threading;
 
 namespace Fosol.Diagnostics
 {
     /// <summary>
-    /// The TraceManager provides a single point of control for diagnostics.
+    /// Principle object to control and configure tracing.
     /// </summary>
     public sealed class TraceManager
-        : IDisposable
     {
         #region Variables
-        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
-        private const string _DefaultWriterKey = "fosol.diagnostics.default.writer";
-        private static TraceManager _Manager;
-        private Fosol.Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection> _ConfigWatcher;
-        private readonly Fosol.Common.Caching.SimpleCache<TraceWriter> _TraceWriterCache = new Common.Caching.SimpleCache<TraceWriter>();
+        private readonly System.Threading.ReaderWriterLockSlim _Lock = new System.Threading.ReaderWriterLockSlim();
+        private static TraceManager _DefaultManager;
+        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> _Config;
+        private readonly TraceListenerCollection _Listeners = new TraceListenerCollection();
+        private readonly SimpleCache<TraceWriter> _Writers = new SimpleCache<TraceWriter>();
+        private bool _ThrowOnError = false;
+        private bool _AutoFlush = false;
+        private bool _FlushOnExit = true;
         #endregion
 
         #region Properties
         /// <summary>
-        /// get - Global TraceManager.
+        /// get - The Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> object.
         /// </summary>
-        internal static TraceManager Manager
+        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> Config
         {
-            get { return _Manager; }
+            get { return _Config; }
+            set { _Config = value; }
         }
 
         /// <summary>
-        /// get - Configuration settings.
+        /// get - Collection of TraceListener objects.
         /// </summary>
-        internal Configuration.DiagnosticsSection Configuration
+        private TraceListenerCollection Listeners
         {
-            get { return _ConfigWatcher != null ? _ConfigWatcher.Section : null; }
+            get { return _Listeners; }
         }
 
         /// <summary>
-        /// get - Shared listeners within the configuration.
+        /// get - Collection of TraceWriter objects.
         /// </summary>
-        internal Configuration.ListenerElementCollection SharedListeners
+        private SimpleCache<TraceWriter> Writers
         {
-            get { return this.Configuration != null ? this.Configuration.SharedListeners : null; }
+            get { return _Writers; }
         }
 
         /// <summary>
-        /// get - Shared filters within the configuration.
+        /// get/set - Whether to throw exceptions when they occur.
+        /// If this is set to 'false' it will simply fire the Error event.
         /// </summary>
-        internal Configuration.FilterElementCollection SharedFilters
+        public bool ThrowOnError
         {
-            get { return this.Configuration != null ? this.Configuration.SharedFilters : null; }
+            get { return _ThrowOnError; }
+            set { _ThrowOnError = value; }
         }
 
         /// <summary>
-        /// get - Source listeners within the configuration.
-        /// </summary>
-        internal Configuration.SourceElementCollection Sources
-        {
-            get { return this.Configuration != null ? this.Configuration.Sources : null; }
-        }
-
-        /// <summary>
-        /// get - Generic trace within the configuration.
-        /// </summary>
-        internal Configuration.TraceElement Trace
-        {
-            get { return this.Configuration != null ? this.Configuration.Trace : CreateDefaultTrace(); }
-        }
-
-        /// <summary>
-        /// get - Controls whether every write will flush.
+        /// get/set - Whether flush is forced after every TraceEvent.
         /// </summary>
         public bool AutoFlush
         {
-            get { return this.Configuration != null ? this.Configuration.Trace.AutoFlush : false; }
+            get { return _AutoFlush; }
+            set { _AutoFlush = value; }
         }
 
         /// <summary>
-        /// get - Controls whether the TraceManager will flush the listeners if the application exits.
+        /// get/set - Whether flush is called when the application exits.
         /// </summary>
         public bool FlushOnExit
         {
-            get { return this.Configuration != null ? this.Configuration.Trace.FlushOnExit : false; }
-        }
-
-        /// <summary>
-        /// get - Cached TraceWriter collection.
-        /// </summary>
-        internal Fosol.Common.Caching.SimpleCache<TraceWriter> Writers
-        {
-            get { return _TraceWriterCache; }
+            get { return _FlushOnExit; }
+            set { _FlushOnExit = value; }
         }
         #endregion
 
         #region Constructors
         /// <summary>
-        /// Initializes the global TraceManager.
+        /// Add all the FormatElement objects in the Fosol.Diagnostics library to the ElementLibrary collection.
         /// </summary>
         static TraceManager()
         {
-            _Manager = new TraceManager();
+            Fosol.Common.Parsers.ElementLibrary.Add(Assembly.GetExecutingAssembly(), typeof(Elements.TraceElement).Namespace);
         }
 
         /// <summary>
-        /// Creates a new instance of a TraceManager.
-        /// Initializes the configuration.
+        /// Creates a new instance of a TraceManager object.
+        /// If you use this constructor it will not use a configuration file, you must configure through code.
         /// </summary>
-        internal TraceManager()
+        public TraceManager()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of a TraceManager object.
+        /// Initializes the TraceManager with the configuration file.
+        /// </summary>
+        /// <param name="sectionNameOrFilePath">Configuration section name, or the full path to the configuration file.</param>
+        public TraceManager(string sectionNameOrFilePath)
+            : this()
+        {
+            _Config = new Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection>(sectionNameOrFilePath);
+            _Config.ThrowOnError = this.ThrowOnError;
+            _Config.Error += OnError;
+            _Config.FileChanged += OnConfigChanged;
+            _Config.Start();
+            Refresh();
+        }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Gets the default TraceManager.
+        /// </summary>
+        /// <returns>TraceManager object.</returns>
+        public static TraceManager GetDefault()
+        {
+            if (_DefaultManager == null)
+            {
+                _DefaultManager = new TraceManager(Configuration.DiagnosticSection.Name);
+            }
+
+            return _DefaultManager;
+        }
+
+        /// <summary>
+        /// Refresh the TraceListener collections.
+        /// </summary>
+        private void Refresh()
         {
             _Lock.EnterWriteLock();
             try
             {
-                _ConfigWatcher = new Common.Configuration.ConfigurationSectionWatcher<Configuration.DiagnosticsSection>(Fosol.Diagnostics.Configuration.DiagnosticsSection.SectionName);
-                _ConfigWatcher.ConfigurationError += Watcher_ConfigurationError;
-                _ConfigWatcher.Start();
+                if (_Config.Section != null)
+                {
+                    this.ThrowOnError = _Config.ThrowOnError;
+                    this.AutoFlush = _Config.Section.Trace.AutoFlush;
+                    this.FlushOnExit = _Config.Section.Trace.FlushOnExit;
 
-                AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+                    // A flush may need to occur before the listeners are cleared.
+                    this.Listeners.Clear();
+
+                    // Generate the TraceListener collection.
+                    foreach (var listener_config in _Config.Section.Trace.Listeners)
+                    {
+                        var shared_listener = _Config.Section.SharedListeners.FirstOrDefault(l => l.Name.Equals(listener_config.Name));
+
+                        // Merge the trace listener with the shared listener.
+                        // This provides a way to modify/override a common configured listener.
+                        if (shared_listener != null)
+                        {
+                            listener_config.Merge(shared_listener);
+                        }
+                        var listener = CreateListener(listener_config);
+
+                        if (listener != null)
+                            this.Listeners.Add(listener);
+                    }
+                }
             }
             finally
             {
                 _Lock.ExitWriteLock();
             }
         }
-        #endregion
 
-        #region Methods
         /// <summary>
-        /// Creates a default trace configuration.
+        /// Get the TraceListener from the configuration.
         /// </summary>
-        /// <returns></returns>
-        private Configuration.TraceElement CreateDefaultTrace()
+        /// <exception cref="Exceptions.ListenerConfigurationException">Failed to create a new instance of a TraceListener object.</exception>
+        /// <param name="config">ListenerElement configuration object.</param>
+        /// <returns>A new instance of a TraceListener object.</returns>
+        internal TraceListener CreateListener(Configuration.ListenerElement config)
         {
-            return new Configuration.TraceElement();
+            try
+            {
+                var listener = CreateInstanceOf<TraceListener>(config.ListenerTypeName, config.Settings);
+                // Reference TraceFilters.
+                foreach (var filter_config in config.Filters)
+                {
+                    var shared_filter = _Config.Section.SharedFilters.FirstOrDefault(f => f.Name.Equals(filter_config.Name));
+
+                    // Merge the filter with the shared filter.
+                    // This provides a way to modify/override a common configured filter.
+                    if (shared_filter != null)
+                    {
+                        filter_config.Merge(shared_filter);
+                    }
+                    var filter = CreateFilter(filter_config);
+
+                    if (filter != null)
+                        listener.Filters.Add(filter);
+                }
+                ApplySettings(listener, config.Settings);
+                listener.Initialize();
+
+                return listener;
+            }
+            catch (Exception ex)
+            {
+                OnError(this, new Common.Configuration.Events.ConfigurationSectionErrorEventArgs(ex));
+                return null;
+            }
         }
 
         /// <summary>
-        /// Get a generic TraceWriter.
+        /// Get the TraceFilter from the configuration.
         /// </summary>
-        /// <param name="type">A type to identify the source of the messages.</param>
-        /// <returns>A TraceWriter object which can be used to send messages to TraceListeners.</returns>
-        public static TraceWriter GetWriter(Type type)
+        /// <param name="config">FilterElement configuration object.</param>
+        /// <returns>A new instance of a FilterElement object.</returns>
+        internal TraceFilter CreateFilter(Configuration.FilterElement config)
         {
-            return TraceManager.Manager.GetWriterFromCache(type);
+            try
+            {
+                var filter = CreateInstanceOf<TraceFilter>(config.FilterTypeName, config.Settings);
+                filter.Condition = config.Condition;
+                ApplySettings(filter, config.Settings);
+                filter.Initialize();
+
+                return filter;
+            }
+            catch (Exception ex)
+            {
+                OnError(this, new Common.Configuration.Events.ConfigurationSectionErrorEventArgs(ex));
+                return null;
+            }
         }
 
         /// <summary>
-        /// Get a TraceWriter for the specific source.
+        /// Checks if the settings contain constructor initialization settings.  
+        /// If it does it will attempt to use them to initialize a new instance of the object.
         /// </summary>
-        /// <param name="source">The source provides a way to filter messages to the appropiate listeners.</param>
-        /// <param name="type">The source Type of the TraceWriter.</param>
-        /// <returns>A TraceWriter obejct which can be used to send message to source TraceListeners.</returns>
-        public static TraceWriter GetWriter(string source, Type type)
+        /// <exception cref="System.ArgumentException">Argument "type" must be assignable from Type T.</exception>
+        /// <exception cref="System.ArgumentNullException">Argument "type" must be a valid type.</exception>
+        /// <typeparam name="T">Type of object to create a new instance of.</typeparam>
+        /// <param name="typeName">Type name of object to create a new instance of.</param>
+        /// <param name="settings">Configuration settings.</param>
+        /// <returns>A new instance of an object of Type T.</returns>
+        private T CreateInstanceOf<T>(string typeName, Configuration.SettingElementCollection settings)
         {
-            return TraceManager.Manager.GetWriterFromCache(source, type);
+            var type = Type.GetType(typeName);
+
+            Fosol.Common.Validation.Assert.IsNotNull(type, "typeName", string.Format(Resources.Strings.Exception_Argument_Type_Invalid, typeName));
+
+            return CreateInstanceOf<T>(type, settings);
         }
 
         /// <summary>
-        /// Get the TraceWriter from cache, or create a new one and add it to the cache.
+        /// Checks if the settings contain constructor initialization settings.  
+        /// If it does it will attempt to use them to initialize a new instance of the object.
         /// </summary>
-        /// <param name="source">Unique key to identify the TraceWriter.</param>
-        /// <param name="type">The source Type of the TraceWriter.</param>
-        /// <returns>TraceWriter object.</returns>
-        private TraceWriter GetWriterFromCache(string source, Type type)
+        /// <exception cref="System.ArgumentException">Argument "type" must be assignable from Type T.</exception>
+        /// <exception cref="Exceptions.SettingConfigurationException">TraceSettingAttribute objects require a ConverterType when applied to constructors.</exception>
+        /// <typeparam name="T">Type of object to create a new instance of.</typeparam>
+        /// <param name="type">Type of object to create a new instance of.</param>
+        /// <param name="settings">Configuration settings.</param>
+        /// <returns>A new instance of an object of Type T.</returns>
+        private T CreateInstanceOf<T>(Type type, Configuration.SettingElementCollection settings)
         {
+            Fosol.Common.Validation.Assert.IsAssignableFromType(type, typeof(T), "type", string.Format(Resources.Strings.Exception_Argument_Type_NotAssignable, type.Name, typeof(T).Name));
+
+            // Determine if the object has TraceSettingAttribute objects on any of its constructors.
+            var constructors_with_attributes = (
+                from c in type.GetConstructors()
+                where c.GetCustomAttributes(typeof(TraceSettingAttribute), true).Length > 0
+                select new
+                {
+                    Constructor = c,
+                    Attributes = c.GetCustomAttributes(typeof(TraceSettingAttribute), true),
+                });
+
+            // Determine if the configuration included constructor settings.
+            foreach (var con in constructors_with_attributes)
+            {
+                var arguments = new List<object>();
+
+                // Check if the configuration has the correct settings for the constructor.
+                foreach (TraceSettingAttribute attr in con.Attributes)
+                {
+                    var setting = settings.FirstOrDefault(s => s.Name.Equals(attr.Name, StringComparison.CurrentCultureIgnoreCase));
+
+                    if (setting == null)
+                    {
+                        arguments.Clear();
+                        break;
+                    }
+
+                    if (attr.ConverterType == null)
+                        throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Setting_Attribute_Missing_ConverterType, attr.Name));
+
+                    var value = default(object);
+
+                    // Convert the setting value with its TypeConverter.
+                    if (attr.TryConvert(setting.Value, out value))
+                    {
+                        arguments.Add(value);
+                        continue;
+                    }
+
+                    break;
+                }
+
+                // There are settings for this constructor so use it.
+                if (arguments.Count() > 0)
+                    return (T)con.Constructor.Invoke(arguments.ToArray());
+            }
+
+            return (T)Activator.CreateInstance(type);
+        }
+
+        /// <summary>
+        /// Applies the configuration settings to the objects properties.
+        /// </summary>
+        /// <exception cref="Exceptions.SettingConfigurationException">Invalid setting configuration for this object.</exception>
+        /// <param name="obj">Object to update with setting values.</param>
+        /// <param name="settings">Configuration settings.</param>
+        private void ApplySettings(object obj, Configuration.SettingElementCollection settings)
+        {
+            var type = obj.GetType();
+            if (settings.Count() > 0)
+            {
+                // Fetch all property settings.
+                var properties = (
+                    from p in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    where p.GetCustomAttributes(typeof(TraceSettingAttribute), true).Length > 0
+                    select new
+                    {
+                        Property = p,
+                        Attribute = (TraceSettingAttribute)p.GetCustomAttributes(typeof(TraceSettingAttribute), true).FirstOrDefault(),
+                        Required = (RequiredAttribute)p.GetCustomAttributes(typeof(RequiredAttribute), true).FirstOrDefault(),
+                        Default = (DefaultValueAttribute)p.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault()
+                    });
+
+                // Apply configuration setting values to the properties.
+                foreach (var prop in properties)
+                {
+                    var setting = settings.FirstOrDefault(s => s.Name.Equals(prop.Attribute.Name, StringComparison.CurrentCultureIgnoreCase));
+
+                    if (setting == null)
+                    {
+                        // Use the default value.
+                        if (prop.Default != null)
+                        {
+                            object val = null;
+                            if (prop.Default.Value.GetType() == prop.Property.PropertyType)
+                                prop.Property.SetValue(obj, prop.Default.Value);
+                            else if (prop.Attribute.TryConvert(prop.Default.Value, out val))
+                                prop.Property.SetValue(obj, val);
+                            else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(prop.Default.Value, prop.Property.PropertyType, ref val))
+                                prop.Property.SetValue(obj, val);
+                            else
+                                prop.Property.SetValue(obj, prop.Default.Value);
+                        }
+
+                        // The setting is required but it hasn't been configured.
+                        if (prop.Required != null)
+                            throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Required, setting.Name));
+
+                        continue;
+                    }
+
+                    object value = null;
+
+                    // Apply the setting value to the property.
+                    if (prop.Attribute.TryConvert(setting.Value, out value))
+                        prop.Property.SetValue(obj, value);
+                    else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(setting.Value, prop.Property.PropertyType, ref value))
+                        prop.Property.SetValue(obj, value);
+                    else
+                        throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Value_Invalid, setting.Name));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a TraceWriter for the specified type.
+        /// If the writer has not been created yet it will generate a new instance of a TraceWriter.
+        /// </summary>
+        /// <param name="source">Type of object creating the TraceWriter.</param>
+        /// <param name="data">TraceData you would like to initialize the TraceWriter with.</param>
+        /// <returns>The TraceWriter associated with the type.</returns>
+        public TraceWriter GetWriter(Type source, TraceData data = null)
+        {
+            Fosol.Common.Validation.Assert.IsNotNull(source, "source");
             _Lock.EnterUpgradeableReadLock();
             try
             {
-                var writer = this.Writers[source];
-                if (writer != null)
-                    return writer;
+                if (_Writers.ContainsKey(TraceWriter.GenerateCacheKey(source, data)))
+                    return _Writers[source.FullName].Value;
 
+                // Create a new TraceWriter and add it to cache.
                 _Lock.EnterWriteLock();
                 try
                 {
-                    writer = new TraceWriter(source, type);
-                    this.Writers.Add(source, writer);
+                    // Double check to confirm the writer has not already been created.
+                    if (_Writers.ContainsKey(TraceWriter.GenerateCacheKey(source, data)))
+                        return _Writers[source.FullName].Value;
+
+                    var writer = CreateWriter(source, data);
+                    _Writers.Add(writer.GetCacheKey(), writer);
                     return writer;
                 }
                 finally
@@ -190,43 +420,43 @@ namespace Fosol.Diagnostics
         }
 
         /// <summary>
-        /// Get the TraceWriter from cache, or create a new one and add it to the cache.
+        /// Creates a new instance of a TraceWriter.
         /// </summary>
-        /// <param name="type">The source Type of the TraceWriter.</param>
-        /// <returns>TraceWriter object.</returns>
-        private TraceWriter GetWriterFromCache(Type type)
+        /// <param name="type">Source Type.</param>
+        /// <param name="data">TraceData object.</param>
+        /// <returns>A new instance of a TraceWriter.</returns>
+        private TraceWriter CreateWriter(Type type, TraceData data = null)
         {
-            _Lock.EnterUpgradeableReadLock();
+            var writer = new TraceWriter(this, type, data);
+            return writer;
+        }
+
+        /// <summary>
+        /// Write the TraceEvent to every listener that validates the TraceEvent.
+        /// Each write is wrapped in it's own try+catch so that a single failure will not cause all other listeners to fail.
+        /// </summary>
+        /// <param name="trace">TraceEvent object.</param>
+        internal void Write(TraceEvent trace)
+        {
+            _Lock.EnterReadLock();
             try
             {
-                var writer = this.Writers[type.FullName];
-                if (writer != null)
-                return writer;
-
-                _Lock.EnterWriteLock();
-                try
+                foreach (var listener in this.Listeners)
                 {
-                    writer = new TraceWriter(type);
-                    this.Writers.Add(type.FullName, writer);
-                    return writer;
-                }
-                finally
-                {
-                    _Lock.ExitWriteLock();
+                    try
+                    {
+                        listener.Write(trace);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnError(this, new Common.Configuration.Events.ConfigurationSectionErrorEventArgs(ex));
+                    }
                 }
             }
             finally
             {
-                _Lock.ExitUpgradeableReadLock();
+                _Lock.ExitReadLock();
             }
-        }
-
-        /// <summary>
-        /// Dispose the configuration watcher.
-        /// </summary>
-        public void Dispose()
-        {
-            _ConfigWatcher.Dispose();
         }
         #endregion
 
@@ -235,30 +465,32 @@ namespace Fosol.Diagnostics
 
         #region Events
         /// <summary>
-        /// When the application exits check if it should flush the writers.
+        /// The configuration file has been updated externally.  
+        /// Refresh the Filters and Listeners.
         /// </summary>
-        /// <param name="sender">Object which called this event.</param>
-        /// <param name="e">EventArgs object.</param>
-        public void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnConfigChanged(object sender, System.IO.FileSystemEventArgs e)
         {
-            if (this.FlushOnExit)
-            {
-                foreach (var key in _TraceWriterCache.Keys)
-                {
-                    var writer = _TraceWriterCache[key];
-                    writer.Flush();
-                }
-            }
+            Refresh();
         }
 
         /// <summary>
-        /// When an exception occurs during loading or initializing the configuration it will be passed to this event.
+        /// If ThrowOnError=false it will raise this event and pass the exception to the handler(s).
         /// </summary>
-        /// <param name="sender">Object the event originated from.</param>
-        /// <param name="e">ConfigurationSectionErrorEventArgs object.</param>
-        void Watcher_ConfigurationError(object sender, Common.Configuration.Events.ConfigurationSectionErrorEventArgs e)
-        {
+        public event EventHandler<Events.ConfigurationExceptionEventArgs> Error;
 
+        /// <summary>
+        /// When an exception is thrown it will either throw the exception or it will raise the Error event.
+        /// </summary>
+        /// <param name="sender">Object sending the error.</param>
+        /// <param name="args">ConfigurationSectionErrorEventArgs object.</param>
+        void OnError(object sender, Fosol.Common.Configuration.Events.ConfigurationSectionErrorEventArgs args)
+        {
+            if (this.ThrowOnError)
+                throw args.Exception;
+            else
+                Error.Raise(sender, new Events.ConfigurationExceptionEventArgs(args.Exception));
         }
         #endregion
     }

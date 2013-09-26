@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Listeners
 {
     /// <summary>
-    /// Provides a basic way to write to the EventLog.
+    /// Provides a way to write TraceEvents to an EventLog.
     /// </summary>
-    [TraceInitialize("Source", typeof(string))]
-    public class EventLogListener
+    public sealed class EventLogListener
         : TraceListener
     {
         #region Variables
@@ -30,25 +29,26 @@ namespace Fosol.Diagnostics.Listeners
 
         #region Constructors
         /// <summary>
-        /// Creates a new instance of an EventLogListener.
+        /// Creates a new instance of a EventLogListener object.
         /// </summary>
         public EventLogListener()
         {
+
         }
 
         /// <summary>
-        /// Creates a new instance of an EventLogListener.
+        /// Creates a new instance of a EventLogListener object.
         /// </summary>
-        /// <param name="eventLog">EventLog object to write to.</param>
+        /// <param name="eventLog">EventLog object to write TraceEvents to.</param>
         public EventLogListener(System.Diagnostics.EventLog eventLog)
         {
             _EventLog = eventLog;
         }
 
         /// <summary>
-        /// Creates a new instance of an EventLogListener.
+        /// Creates a new instance of a EventLogListener object.
         /// </summary>
-        /// <param name="source">Source name of the EventLog.</param>
+        /// <param name="source">A source name to identify the EventLog.</param>
         public EventLogListener(string source)
         {
             _EventLog = new System.Diagnostics.EventLog();
@@ -58,16 +58,16 @@ namespace Fosol.Diagnostics.Listeners
 
         #region Methods
         /// <summary>
-        /// Write the TraceEvent to the EventLog.
+        /// Write a message to the EventLog.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
-        protected override void OnWrite(TraceEvent traceEvent)
+        /// <param name="trace"></param>
+        protected override void OnWrite(TraceEvent trace)
         {
             if (this.EventLog != null)
             {
-                var id = traceEvent.Id > 65535 ? 65535 : traceEvent.Id < 0 ? 0 : traceEvent.Id;
-                var message = this.Render(traceEvent);
-                this.EventLog.WriteEntry(message, ChooseEventLogEntryType(traceEvent.EventType), id);
+                var id = trace.Id > 65535 ? 65535 : trace.Id < 0 ? 0 : trace.Id;
+                var message = this.Render(trace);
+                this.EventLog.WriteEntry(message, ChooseEventLogEntryType(trace.Level), id);
             }
         }
 
@@ -80,6 +80,7 @@ namespace Fosol.Diagnostics.Listeners
             {
                 this.EventLog.Close();
             }
+            base.Close();
         }
 
         /// <summary>
@@ -99,18 +100,18 @@ namespace Fosol.Diagnostics.Listeners
         }
 
         /// <summary>
-        /// Choose an appropiate EventLogEntryType based on the TraceEvent.EventType value.
+        /// Choose an appropiate EventLogEntryType based on the TraceEvent.Level value.
         /// </summary>
-        /// <param name="type">TraceEventType value.</param>
+        /// <param name="level">TraceLevel value.</param>
         /// <returns>System.Diagnostitics.EventLogEntryType value.</returns>
-        private System.Diagnostics.EventLogEntryType ChooseEventLogEntryType(TraceEventType type)
+        private System.Diagnostics.EventLogEntryType ChooseEventLogEntryType(TraceLevel level)
         {
-            switch (type)
+            switch (level)
             {
-                case (TraceEventType.Critical):
-                case (TraceEventType.Error):
+                case (TraceLevel.Critical):
+                case (TraceLevel.Error):
                     return System.Diagnostics.EventLogEntryType.Error;
-                case (TraceEventType.Warning):
+                case (TraceLevel.Warning):
                     return System.Diagnostics.EventLogEntryType.Warning;
                 default:
                     return System.Diagnostics.EventLogEntryType.Information;

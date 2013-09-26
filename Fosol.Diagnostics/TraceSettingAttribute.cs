@@ -1,48 +1,43 @@
-﻿using Fosol.Common.Extensions.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics
 {
-    /// <summary>
-    /// Declares the property or field as a configuration attribute.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class TraceSettingAttribute
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Constructor, AllowMultiple = true, Inherited = true)]
+    public class TraceSettingAttribute
         : Attribute
     {
         #region Variables
-        private readonly string _Name;
-        private readonly bool _IsRequired;
-        private readonly TypeConverter _Converter;
+        private Type _ConverterType;
+        private TypeConverter _Converter;
         #endregion
 
         #region Properties
         /// <summary>
-        /// get - The unique name for this property used in the configuration file.
+        /// get/set - A unique name to identify this setting.
         /// </summary>
-        public string Name
+        public string Name { get; private set; }
+
+        /// <summary>
+        /// get/set - The Type of the value or the TypeConverter to use to cast the value.
+        /// </summary>
+        public Type ConverterType 
         {
-            get { return _Name; }
+            get { return _ConverterType; }
+            set
+            {
+                if (typeof(TypeConverter).IsAssignableFrom(value))
+                    _Converter = (TypeConverter)Activator.CreateInstance(value);
+                _ConverterType = value;
+            }
         }
 
         /// <summary>
-        /// get - This property is required.
-        /// </summary>
-        public bool IsRequired
-        {
-            get { return _IsRequired; }
-        }
-
-        /// <summary>
-        /// get - Type of TypeConverter to use when setting the property of field.
+        /// get - An instance of the TypeConverter.
         /// </summary>
         public TypeConverter Converter
         {
@@ -52,64 +47,97 @@ namespace Fosol.Diagnostics
 
         #region Constructors
         /// <summary>
-        /// Creates a new TraceListenerPropertyAttribute object.
+        /// Creates a new instance of a TraceSettingAttribute.
         /// </summary>
-        /// <exception cref="System.ArgumentException">Parameter "name" cannot be empty.</exception>
-        /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
-        /// <param name="name">The unique name for this property used in the configuration file.</param>
+        /// <param name="name">A unique name to identify this setting.</param>
         public TraceSettingAttribute(string name)
         {
-            Common.Validation.Assert.IsNotNullOrEmpty(name, "name");
-            _Name = name;
+            this.Name = name;
         }
 
         /// <summary>
-        /// Creates a new TraceListenerPropertyAttribute object.
+        /// Creates a new instance of a TraceSettingAttribute.
         /// </summary>
-        /// <exception cref="System.ArgumentException">Parameter "name" cannot be empty.</exception>
-        /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
-        /// <param name="name">The unique name for this property used in the configuration file.</param>
-        /// <param name="isRequired">If true this will throw an exception if the property/field has not been set in the configuration.</param>
-        public TraceSettingAttribute(string name, bool isRequired)
+        /// <param name="name">A unique name to identify this setting.</param>
+        /// <param name="converterType">The Type of the TypeConverter to use to cast values.</param>
+        /// <param name="args">Arguments necessary to create an instance of the TypeConverter.</param>
+        public TraceSettingAttribute(string name, Type converterType, params object[] args)
             : this(name)
         {
-            _IsRequired = isRequired;
-        }
-
-        /// <summary>
-        /// Creates a new TraceListenerPropertyAttribute object.
-        /// </summary>
-        /// <exception cref="System.ArgumentException">Parameter "name" cannot be empty.</exception>
-        /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
-        /// <param name="name">The unique name for this property used in the configuration file.</param>
-        /// <param name="converterType">TypeConverter to use when assigning the configured value to the property/field.</param>
-        public TraceSettingAttribute(string name, Type converterType, params object[] converterArgs)
-            : this(name, false, converterType, converterArgs)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new TraceListenerPropertyAttribute object.
-        /// </summary>
-        /// <exception cref="System.ArgumentException">Parameter "name" cannot be empty.</exception>
-        /// <exception cref="System.ArgumentNullException">Parameter "name" cannot be null.</exception>
-        /// <param name="name">The unique name for this property used in the configuration file.</param>
-        /// <param name="isRequired">If true this will throw an exception if the property/field has not been set in the configuration.</param>
-        /// <param name="converterType">TypeConverter to use when assigning the configured value to the property/field.</param>
-        public TraceSettingAttribute(string name, bool isRequired, Type converterType, params object[] converterArgs)
-            : this(name, isRequired)
-        {
-            if (converterType != null)
-            {
-                if (converterArgs != null && converterArgs.Length > 0)
-                    _Converter = (TypeConverter)Activator.CreateInstance(converterType, converterArgs);
-                else if (converterType.HasEmptyConstructor())
-                    _Converter = (TypeConverter)Activator.CreateInstance(converterType);
-            }
+            if (args != null && args.Length > 0)
+                _Converter = (TypeConverter)Activator.CreateInstance(converterType, args);
+            else
+                _Converter = (TypeConverter)Activator.CreateInstance(converterType);
+            _ConverterType = converterType;
         }
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Attempts to convert the value with the TypeConverter.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public bool TryConvert(object value, out object result)
+        {
+            // Use the TypeConverter specified.
+            if (_Converter != null)
+            {
+                if (_Converter.CanConvertFrom(value.GetType()))
+                {
+                    result = _Converter.ConvertFrom(value);
+                    return true;
+                }
+
+                result = null;
+                return false;
+            }
+
+            // Use the Type specified.
+            if (this.ConverterType != null)
+            {
+                result = default(object);
+                if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(value, this.ConverterType, ref result))
+                    return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to convert the value with the TypeConverter if it is set.
+        /// If there is no TypeConverter it returns the original value.
+        /// </summary>
+        /// <exception cref="System.InvalidOperationException">Cannot convert value to the specified type.</exception>
+        /// <param name="value">Value to convert.</param>
+        /// <returns></returns>
+        public object Convert(object value)
+        {
+            // Use the TypeConverter specified.
+            if (_Converter != null)
+            {
+                if (_Converter.CanConvertFrom(value.GetType()))
+                {
+                    return _Converter.ConvertFrom(value);
+                }
+
+                throw new InvalidOperationException();
+            }
+
+            // Use the Type specified.
+            if (this.ConverterType != null)
+            {
+                var result = default(object);
+                if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(value, this.ConverterType, ref result))
+                    return result;
+
+                throw new InvalidOperationException();
+            }
+
+            return value;
+        }
         #endregion
 
         #region Operators

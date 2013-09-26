@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Listeners
 {
     /// <summary>
     /// The ConsoleListener writes messages to the command console.
     /// </summary>
-    [TraceInitialize("UseErrorStream", typeof(bool))]
     public class ConsoleListener
         : TextWriterListener
     {
@@ -28,7 +26,6 @@ namespace Fosol.Diagnostics.Listeners
         public ConsoleListener()
             : this(false)
         {
-
         }
 
         /// <summary>
@@ -38,6 +35,7 @@ namespace Fosol.Diagnostics.Listeners
         ///     If 'true' it will write messages to the Console.Error stream.
         ///     If 'false' it will write messages to the Console.Out stream.
         /// </param>
+        [TraceSetting("useErrorStream", ConverterType = typeof(BooleanConverter))]
         public ConsoleListener(bool useErrorStream)
             : base(useErrorStream ? Console.Error : Console.Out)
         {
@@ -46,6 +44,7 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Methods
+
         #endregion
 
         #region Operators

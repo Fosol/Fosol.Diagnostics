@@ -46,12 +46,12 @@
     
     mimetype: application/x-microsoft.net.object.binary.base64
     value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : System.Runtime.Serialization.Parsers.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
     
     mimetype: application/x-microsoft.net.object.soap.base64
     value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : System.Runtime.Serialization.Parsers.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
@@ -117,67 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Configuration_Exception_Argument_Conversion_Failed" xml:space="preserve">
-    <value>The "{0}" configuration argument "{1}" failed to convert to type "{2}".</value>
+  <data name="Exception_Argument_Type_Invalid" xml:space="preserve">
+    <value>Argument "{0}" must be a valid type.</value>
   </data>
-  <data name="Configuration_Exception_Argument_Converter_Invalid" xml:space="preserve">
-    <value>The "{0}" configuration argument "{1}" has an invalid converter type "{2}".</value>
+  <data name="Exception_Argument_Type_NotAssignable" xml:space="preserve">
+    <value>Argument "{0}" must be an assignable to type "{1}".</value>
   </data>
-  <data name="Configuration_Exception_Argument_Type_Invalid" xml:space="preserve">
-    <value>The "{0}" configuration argument "{1}" has an invalid type "{2}".</value>
+  <data name="Exception_Configuration_Filter_Failed" xml:space="preserve">
+    <value>Failed to create a new instance of the filter "{0}".</value>
   </data>
-  <data name="Configuration_Exception_Assembly_Is_Invalid" xml:space="preserve">
-    <value>The "{0}" assembly is invalid.</value>
+  <data name="Exception_Configuration_Listener_Failed" xml:space="preserve">
+    <value>Failed to create a new instance of the listener "{0}".</value>
   </data>
-  <data name="Configuration_Exception_Attribute_Required" xml:space="preserve">
-    <value>The "{0}" attribute is required.</value>
+  <data name="Exception_Configuration_Setting_Required" xml:space="preserve">
+    <value>Setting "{0}" is required.</value>
   </data>
-  <data name="Configuration_Exception_Filter_Failed" xml:space="preserve">
-    <value>The "{0}" filter failed to be created.</value>
+  <data name="Exception_Configuration_Setting_Value_Invalid" xml:space="preserve">
+    <value>Setting "{0}" has an invalid value.</value>
   </data>
-  <data name="Configuration_Exception_Filter_Initialize_Invalid" xml:space="preserve">
-    <value>The "{0}" filter initialize values are invalid.</value>
-  </data>
-  <data name="Configuration_Exception_Filter_Reference_Invalid_Properties" xml:space="preserve">
-    <value>The "{0}" filter references cannot include additional properties.</value>
-  </data>
-  <data name="Configuration_Exception_Filter_Reference_Must_Exist" xml:space="preserve">
-    <value>The "{0}" filter reference must point to an existing shared filter.</value>
-  </data>
-  <data name="Configuration_Exception_Filter_Setting_Required" xml:space="preserve">
-    <value>The "{0}" filter requires the "{1}" setting attribute to be configured.</value>
-  </data>
-  <data name="Configuration_Exception_Filter_Type_Invalid" xml:space="preserve">
-    <value>The "{0}" filter type "{1}" is not valid.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Arguments_Invalid" xml:space="preserve">
-    <value>The "{0}" listener arguments are invalid.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Failed" xml:space="preserve">
-    <value>The "{0}" listener failed to be created.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Reference_Invalid_Properties" xml:space="preserve">
-    <value>The "{0}" listener reference cannot include additional properties.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Reference_Must_Exist" xml:space="preserve">
-    <value>The "{0}" listener reference must point to an existing shared listener.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Setting_Required" xml:space="preserve">
-    <value>The "{0}" listener requires the "{1}" setting attribute to be configured.</value>
-  </data>
-  <data name="Configuration_Exception_Listener_Type_Invalid" xml:space="preserve">
-    <value>The "{0}" listener type "{1}" is not valid.</value>
-  </data>
-  <data name="Configuration_Exception_TraceKeyword_Already_Exists" xml:space="preserve">
-    <value>The "{0}" keyword already exists.</value>
-  </data>
-  <data name="Configuration_Exception_TraceKeyword_Attribute_Required" xml:space="preserve">
-    <value>The "{0}" keyword requires the "{1}" attribute.</value>
-  </data>
-  <data name="Configuration_Exception_TraceKeyword_Does_Not_Exist" xml:space="preserve">
-    <value>The "{0}" keyword does not exist.</value>
-  </data>
-  <data name="Configuration_Exception_TraceKeyword_Is_Not_Valid" xml:space="preserve">
-    <value>The "{0}" keyword is not valid.</value>
+  <data name="Exception_Setting_Attribute_Missing_ConverterType" xml:space="preserve">
+    <value>The TraceSettingAttribute "{0}" requires the ConverterType property value to be set when applied to constructors.</value>
   </data>
 </root>

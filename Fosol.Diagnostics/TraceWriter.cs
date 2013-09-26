@@ -1,248 +1,135 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace Fosol.Diagnostics
 {
     /// <summary>
-    /// A TraceWriter provides a way to send message to all or a subset of TraceListeners.
+    /// A TraceWriter provides a way to send messages to TraceListeners.
     /// </summary>
     public sealed class TraceWriter
-        : IDisposable
     {
         #region Variables
-        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
-        private string _Source;
-        private Type _SourceType;
-        private InstanceProcess _WriterProcess;
-        private InstanceThread _WriterThread;
+        internal readonly System.Threading.ReaderWriterLockSlim _Lock = new System.Threading.ReaderWriterLockSlim();
+        private readonly Type _SourceType;
+        private readonly TraceData _Data;
+        private readonly InstanceProcess _Process;
+        private readonly InstanceThread _Thread;
+        private readonly TraceManager _Manager;
         #endregion
 
         #region Properties
         /// <summary>
-        /// get - The source of message sent to this writer.
+        /// get - The Type of the source which created the TraceWriter.
         /// </summary>
-        public string Source
-        {
-            get { return _Source; }
-            private set { _Source = value; }
-        }
+        public Type SourceType { get { return _SourceType; } }
 
         /// <summary>
-        /// get - The object type which is sending messages to this writer.
+        /// get - Additional information included with this TraceWriter.
         /// </summary>
-        public Type SourceType
-        {
-            get { return _SourceType; }
-            private set { _SourceType = value; }
-        }
+        public TraceData Data { get { return _Data; } }
 
         /// <summary>
-        /// get - The configured listeners for this writer.
+        /// get - The Process this TraceEvent was created with.
         /// </summary>
-        internal Configuration.ListenerElementCollection Config
-        {
-            get 
-            {
-                if (!string.IsNullOrEmpty(this.Source))
-                {
-                    var source = TraceManager.Manager.Sources[this.Source];
-                    if (source != null)
-                        return source.Listeners;
-                    else
-                        return null;
-                }
-                else
-                    return TraceManager.Manager.Trace.Listeners;
-            }
-        }
+        public InstanceProcess Process { get { return _Process; } }
 
         /// <summary>
-        /// get - A collection of the listeners initialized from the configuration.
+        /// get - The Thread this TraceEvent was created with.
         /// </summary>
-        public IEnumerable<Listeners.TraceListener> Listeners
-        {
-            get
-            {
-                if (this.Config == null)
-                    yield break;
+        public InstanceThread Thread { get { return _Thread; } }
 
-                foreach (var config in this.Config)
-                {
-                    yield return config.Listener;
-                }
-            }
-        }
-
-        public InstanceProcess WriterProcess
+        /// <summary>
+        /// get - Reference to the TraceManager this writer belongs to.
+        /// </summary>
+        internal TraceManager Manager
         {
-            get { return _WriterProcess; }
-            private set { _WriterProcess = value; }
-        }
-
-        public InstanceThread WriterThread
-        {
-            get { return _WriterThread; }
-            private set { _WriterThread = value; }
+            get { return _Manager; }
         }
         #endregion
 
         #region Constructors
         /// <summary>
-        /// Creates a new instance of TraceWriter.
+        /// Creates a new instance of a TraceWriter object.
         /// </summary>
-        /// <param name="type">The Type of object submitting TraceEvents.</param>WWWWWWWWWWWW
-        public TraceWriter(Type type)
+        /// <param name="manager">Reference to the TraceManager this writer belongs to.</param>
+        /// <param name="source">Source object Type creating the TraceWriter.</param>
+        /// <param name="data"></param>
+        internal TraceWriter(TraceManager manager, Type source, TraceData data = null)
         {
-            Fosol.Common.Validation.Assert.IsNotNull(type, "type");
-            this.SourceType = type;
-        }
+            Fosol.Common.Validation.Assert.IsNotNull(manager, "manager");
+            Fosol.Common.Validation.Assert.IsNotNull(source, "source");
 
-        /// <summary>
-        /// Creates a new instance of TraceWriter.
-        /// This will only send message to listeners configured for this source.
-        /// </summary>
-        /// <param name="source">The source used to filter these messages.</param>
-        /// <param name="type">The Type of object submitting TraceEvents.</param>
-        public TraceWriter(string source, Type type)
-        {
-            Fosol.Common.Validation.Assert.IsNotNullOrEmpty(source, "source");
-            Fosol.Common.Validation.Assert.IsNotNull(type, "type");
-            this.Source = source;
-            this.SourceType = type;
-            this.WriterThread = new InstanceThread();
-            this.WriterProcess = new InstanceProcess();
+            _Manager = manager;
+            _SourceType = source;
+
+            // From this point on the TraceData is readonly.
+            if (data != null)
+                data.IsReadonly = true;
+
+            _Data = data;
+            _Process = new InstanceProcess();
+            _Thread = new InstanceThread();
         }
         #endregion
 
         #region Methods
         /// <summary>
-        /// Write an information message to the configured listeners.
+        /// Returns the cache key for this TraceWriter.
         /// </summary>
-        /// <param name="message">Message to send to listeners.</param>
+        /// <returns>Unique cache key value.</returns>
+        public string GetCacheKey()
+        {
+            return TraceWriter.GenerateCacheKey(this.SourceType, this.Data);
+        }
+
+        /// <summary>
+        /// Generated a cache key for a TraceWriter.
+        /// </summary>
+        /// <param name="source">Source object Type creating the TraceWriter.</param>
+        /// <returns>Unique cache key value.</returns>
+        public static string GenerateCacheKey(Type source, TraceData data = null)
+        {
+            var sb = new StringBuilder();
+            if (data != null)
+            {
+                foreach (var key in data.Keys)
+                {
+                    sb.Append(string.Format("|{0}={1}", key, data[key].ToString()));
+                }
+            }
+
+            return string.Format("{0}{1}", source.FullName, sb.ToString());
+        }
+
+        /// <summary>
+        /// Write TraceLevel.Information message to TraceListeners.
+        /// </summary>
+        /// <param name="message">Message to write to TraceListeners.</param>
         public void Write(string message)
         {
-            Write(TraceEventType.Information, 0, message);
+            Write(TraceLevel.Information, message);
         }
 
         /// <summary>
-        /// Write this message to the configured listeners.
+        /// Write message to TraceListeners.
         /// </summary>
-        /// <param name="eventType">TraceEventType value.</param>
-        /// <param name="message">Message to send to listeners.</param>
-        public void Write(TraceEventType eventType, string message)
+        /// <param name="level">TraceLevel of message.</param>
+        /// <param name="message">Message to write to TraceListeners.</param>
+        public void Write(TraceLevel level, string message)
         {
-            Write(eventType, 0, message);
+            Write(new TraceEvent(this, level, message));
         }
 
         /// <summary>
-        /// Write this message to the configured listeners.
+        /// Send TraceEvent to the TraceListeners.
         /// </summary>
-        /// <param name="eventType">TraceEventType value.</param>
-        /// <param name="id">Unique id to identify this message.</param>
-        /// <param name="message">Message to send to listeners.</param>
-        public void Write(TraceEventType eventType, int id, string message)
+        /// <param name="trace">TraceEvent object.</param>
+        public void Write(TraceEvent trace)
         {
-            Write(new TraceEvent(eventType, id, this.Source, this.SourceType, message));
-        }
-
-        /// <summary>
-        /// Write an error message to the configured listeners.
-        /// </summary>
-        /// <param name="exception">Message to send to listeners.</param>
-        public void Write(Exception exception)
-        {
-            Write(TraceEventType.Error, 0, exception);
-        }
-
-        /// <summary>
-        /// Write this message to the configured listeners.
-        /// </summary>
-        /// <param name="eventType">TraceEventType value.</param>
-        /// <param name="exception">Exception to send to listeners.</param>
-        public void Write(TraceEventType eventType, Exception exception)
-        {
-            Write(eventType, 0, exception);
-        }
-
-        /// <summary>
-        /// Write this message to the configured listeners.
-        /// </summary>
-        /// <param name="eventType">TraceEventType value.</param>
-        /// <param name="id">Unique id to identify this message.</param>
-        /// <param name="exception">Exception to send to listeners.</param>
-        public void Write(TraceEventType eventType, int id, Exception exception)
-        {
-            Write(new TraceEvent(eventType, id, this.Source, this.SourceType, exception));
-        }
-
-        /// <summary>
-        /// Write this TraceEvent to the configured listeners.
-        /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
-        public void Write(TraceEvent traceEvent)
-        {
-            if (this.Listeners != null)
-            {
-                var auto_flush = TraceManager.Manager.AutoFlush;
-                traceEvent.Writer = this;
-
-                foreach (var listener in this.Listeners)
-                {
-                    if (listener.ShouldTrace(traceEvent))
-                    {
-                        listener.Write(traceEvent);
-                        if (auto_flush)
-                            listener.Flush();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flush the listeners.
-        /// </summary>
-        public void Flush()
-        {
-            if (this.Listeners != null)
-            {
-                foreach (var listener in this.Listeners)
-                {
-                    listener.Flush();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Close the listeners.
-        /// </summary>
-        public void Close()
-        {
-            if (this.Listeners != null)
-            {
-                foreach (var listener in this.Listeners)
-                {
-                    listener.Close();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Close and then dispose the listeners.
-        /// </summary>
-        public void Dispose()
-        {
-            Close();
-
-            if (this.Listeners != null)
-            {
-                foreach (var listener in this.Listeners)
-                {
-                    listener.Dispose();
-                }
-            }
+            this.Manager.Write(trace);
         }
         #endregion
 

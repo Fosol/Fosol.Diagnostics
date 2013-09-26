@@ -1,229 +1,94 @@
-﻿using Fosol.Common.Extensions.Reflection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading;
 
 namespace Fosol.Diagnostics.Configuration
 {
     /// <summary>
-    /// A FilterElement provides a way to dynamically configure which TraceEvent message are sent to the listeners.
+    /// FilterElement provides a way to configure TraceFilter objects.
     /// </summary>
     internal class FilterElement
-        : ConfigurationElement
+        : System.Configuration.ConfigurationElement
     {
         #region Variables
-        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
-        private const string _NameKey = "name";
-        private const string _TypeNameKey = "type";
-        private const string _InitializeKey = "initialize";
-        private const string _SettingsKey = "settings";
-        private Lazy<Filters.TraceFilter> _Filter;
         #endregion
 
         #region Properties
         /// <summary>
-        /// get/set - A unique name to identify the TraceFilter.
+        /// get/set - A unique name to identify TraceFilter.
         /// </summary>
-        [ConfigurationProperty(_NameKey, IsRequired = true, IsKey = true)]
+        [System.Configuration.ConfigurationProperty("name", IsKey = true, IsRequired = true)]
         public string Name
         {
-            get { return (string)base[_NameKey]; }
-            set { base[_NameKey] = value; }
+            get { return (string)this["name"]; }
+            set { this["name"] = value; }
         }
 
         /// <summary>
-        /// get/set - The Type of TraceFilter this configuration will create.
+        /// get/set - The Type name of TraceFilter.
         /// </summary>
-        [ConfigurationProperty(_TypeNameKey)]
-        public string TypeName
+        [System.Configuration.ConfigurationProperty("type")]
+        public string FilterTypeName
         {
-            get { return (string)base[_TypeNameKey]; }
-            set { base[_TypeNameKey] = value; }
+            get { return (string)this["type"]; }
+            set { this["type"] = value; }
         }
 
         /// <summary>
-        /// get/set - Initialization configuration items provide a way to construct the TraceFilter.
+        /// get/set - Control how this filter will work with other filters.
         /// </summary>
-        [ConfigurationProperty(_InitializeKey)]
-        public ArgumentElementCollection Initialize
+        [System.Configuration.ConfigurationProperty("condition", IsRequired = false, DefaultValue = FilterCondition.None)]
+        [TypeConverter(typeof(Fosol.Common.Converters.EnumConverter<FilterCondition>))]
+        public FilterCondition Condition
         {
-            get { return (ArgumentElementCollection)base[_InitializeKey]; }
-            set { base[_InitializeKey] = value; }
+            get { return (FilterCondition)this["condition"]; }
+            set { this["condition"] = value; }
         }
 
         /// <summary>
-        /// get/set - Setting configuration items provide a way to intialize TraceFilter properties.
+        /// get/set - Collection of SettingElement objects.
         /// </summary>
-        [ConfigurationProperty(_SettingsKey)]
-        public ArgumentElementCollection Settings
+        [System.Configuration.ConfigurationProperty("", IsDefaultCollection = true)]
+        public SettingElementCollection Settings
         {
-            get { return (ArgumentElementCollection)base[_SettingsKey]; }
-            set { base[_SettingsKey] = value; }
-        }
-
-        public Filters.TraceFilter Filter
-        {
-            get
-            {
-                return _Filter.Value;
-            }
+            get { return (SettingElementCollection)this[""]; }
+            set { this[""] = value; }
         }
         #endregion
 
         #region Constructors
-        public FilterElement()
-        {
-            _Filter = new Lazy<Filters.TraceFilter>(() => GetFilter(), true);
-        }
         #endregion
 
         #region Methods
         /// <summary>
-        /// Returns the TraceFilter represented by this configuration.
-        /// If it hasn't already been created it will create it.
+        /// Merge the sharedFilter with this FilterElement.
+        /// Settings within this FilterElement will override the sharedFilter settings.
         /// </summary>
-        /// <returns>TraceFilter object.</returns>
-        internal Filters.TraceFilter GetFilter()
+        /// <param name="sharedFilter">Shared FilterElement configuration.</param>
+        public void Merge(FilterElement sharedFilter)
         {
-            var name = this.Name;
-            var type_name = this.TypeName;
+            this.FilterTypeName = sharedFilter.FilterTypeName;
 
-            // Annoyingly an empty TraceFilter is created even if one isn't configured.
-            // So check for this and exit.
-            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type_name))
-                type_name = "Fosol.Diagnostics.Filters.DefaultFilter, Fosol.Diagnostics";
-
-            // This is a reference to a SharedFilter, so confirm that it exists.
-            if (string.IsNullOrEmpty(type_name))
+            // Use the shared filter condition configuration.
+            if (this.Condition == FilterCondition.None)
             {
-                // When refrencing a SharedFilter you cannot include other configuration options.
-                if (this.Initialize.Count != 0 || this.Settings.Count != 0)
-                    throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Reference_Invalid_Properties, name));
+                // Change the condition None to And.
+                if (sharedFilter.Condition == FilterCondition.None)
+                    sharedFilter.Condition = FilterCondition.And;
 
-                // The reference must exist in the shared listeners.
-                if (TraceManager.Manager.SharedFilters == null)
-                    throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Reference_Must_Exist, name));
-
-                var shared = TraceManager.Manager.SharedFilters[name];
-                if (shared == null)
-                    throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Reference_Must_Exist, name));
-
-                // Reference the shared listener.
-                return shared.GetFilter();
+                this.Condition = sharedFilter.Condition;
             }
-            // Try to create the listener as it has been defined in the configuration.
-            else
+
+            // Add additional settings from the shared filter.
+            foreach (var setting in sharedFilter.Settings)
             {
-                // Initialize the listener with the arguments.
-                return CreateFilter();
+                // Only add the settings from the sharedFilter if it doesn't already exist here.
+                if (this.Settings.FirstOrDefault(s => s.Name.Equals(setting.Name)) == null)
+                    this.Settings.Add(setting);
             }
         }
-
-        /// <summary>
-        /// Creates a new TraceFilter object based on this configuration.
-        /// </summary>
-        /// <returns>A new TraceFilter object.</returns>
-        internal Filters.TraceFilter CreateFilter()
-        {
-            var name = this.Name;
-            var type_name = this.TypeName;
-            var initialize = (this.Initialize.Count == 0) ? null : this.Initialize;
-            var settings = (this.Settings.Count == 0) ? null : this.Settings;
-
-            var type = Type.GetType(type_name);
-            Filters.TraceFilter filter = null;
-
-            if (type == null)
-                throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Type_Invalid, name, type_name));
-
-            // Use the default constructor to create a new TraceFilter.
-            if (initialize == null)
-            {
-                var ctor = type.GetConstructor(new Type[0]);
-
-                if (ctor != null)
-                    filter = ctor.Invoke(new object[0]) as Filters.TraceFilter;
-            }
-            else
-            {
-                object[] init = new object[initialize.Count];
-                int i = 0;
-                // Get the initialize attributes.
-                foreach (TraceInitializeAttribute attr in type.GetCustomAttributes(typeof(TraceInitializeAttribute), true))
-                {
-                    var config = initialize.FirstOrDefault(a => a.Name.Equals(attr.Name, StringComparison.InvariantCulture));
-
-                    // Found an initialize attribute that matches the configured argument.
-                    if (config != null)
-                    {
-                        init[i] = attr.Convert(config.Value);
-                        i++;
-                    }
-                }
-
-                // Get the constructor that matches the supplied initialize args (order is important).
-                var ctor = type.GetConstructor(init.Select(a => a.GetType()).ToArray());
-
-                if (ctor != null)
-                    filter = ctor.Invoke(init) as Filters.TraceFilter;
-            }
-
-            if (filter == null)
-                throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Failed, this.Name));
-
-            var pinfos = (
-                from p in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                where p.GetCustomAttribute(typeof(TraceSettingAttribute), true) != null
-                select p);
-
-            foreach (var prop in pinfos)
-            {
-                var attr = prop.GetCustomAttribute(typeof(TraceSettingAttribute), true) as TraceSettingAttribute;
-
-                // If property values were included in the configuration update the TraceFilter.
-                if (settings != null)
-                {
-                    var config = settings.FirstOrDefault(p => p.Name.Equals(attr.Name, StringComparison.InvariantCulture));
-
-                    // The configuration provides a default value so apply it to the property.
-                    if (config != null)
-                    {
-                        if (attr.Converter != null)
-                        {
-                            prop.SetValue2(filter, config.Value, attr.Converter);
-                        }
-                        else if (prop.PropertyType == typeof(string))
-                        {
-                            prop.SetValue(filter, config.Value);
-                        }
-                        else
-                        {
-                            // Convert the configuration value to the property type.
-                            prop.SetValue2(filter, config.Value);
-                        }
-                    }
-                    else if (attr.IsRequired)
-                        throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Setting_Required, this.Name, attr.Name));
-                    else
-                        prop.ApplyDefaultValue(filter, attr.Converter);
-                }
-                else if (attr.IsRequired)
-                    throw new Exceptions.ConfigurationFilterException(string.Format(Resources.Strings.Configuration_Exception_Filter_Setting_Required, this.Name, attr.Name));
-                else
-                    prop.ApplyDefaultValue(filter, attr.Converter);
-            }
-
-            // Call the Initialize method.
-            filter.Initialize();
-
-            return filter;
-        }
-
         #endregion
 
         #region Operators

@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
-    [ConfigurationCollection(typeof(ListenerElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
+    [System.Configuration.ConfigurationCollection(
+        typeof(ListenerElement),
+        CollectionType = System.Configuration.ConfigurationElementCollectionType.AddRemoveClearMap,
+        AddItemName = "add",
+        RemoveItemName = "remove",
+        ClearItemsName = "clear")]
     internal class ListenerElementCollection
         : Fosol.Common.Configuration.ConfigurationElementCollection<ListenerElement>
     {
@@ -20,14 +24,7 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-        internal void InitializeDefaultInternal()
-        {
-            this.BaseAdd(new ListenerElement()
-            {
-                Name = "Default",
-                TypeName = typeof(Listeners.DefaultListener).FullName
-            });
-        }
+
         #endregion
 
         #region Operators

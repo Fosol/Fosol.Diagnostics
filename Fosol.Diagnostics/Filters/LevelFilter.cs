@@ -1,32 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics.Filters
 {
     /// <summary>
-    /// A LevelFilter ensures the only TraceEvents that are allowed through to the listeners are those that have a TraceType greater than equal to the configured level.
+    /// Provides a way to filter TraceEvents so that only the specified TraceLevel are sent to the TraceListeners.
     /// </summary>
     public class LevelFilter
         : TraceFilter
     {
         #region Variables
-        private TraceEventType _Level;
         #endregion
 
         #region Properties
         /// <summary>
-        /// get/set - The level of TraceType values that are allowed to be sent to the listeners.
+        /// get/set - Defines which TraceLevels are sent to the TraceListeners.
         /// </summary>
-        [TraceSetting("Level", true, typeof(EnumConverter), typeof(TraceEventType))]
-        public TraceEventType Level
-        {
-            get { return _Level; }
-            set { _Level = value; }
-        }
+        [TraceSetting("level")]
+        [Required]
+        public TraceLevel Level { get; set; }
         #endregion
 
         #region Constructors
@@ -34,16 +29,13 @@ namespace Fosol.Diagnostics.Filters
 
         #region Methods
         /// <summary>
-        /// Checks to see if the TraceEvent should be sent to the listeners.
+        /// Check if the TraceEvent.Level is allowed to be sent to the TraceListeners.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
-        /// <returns>'True' if the TraceEvent should be send to the listeners.</returns>
-        public override bool ShouldTrace(TraceEvent traceEvent)
+        /// <param name="trace">TraceEvent object.</param>
+        /// <returns>'True' if the TraceEvent should be sent to the TraceListeners.</returns>
+        protected override bool OnValidate(TraceEvent trace)
         {
-            if ((int)traceEvent.EventType >= (int)this.Level)
-                return true;
-
-            return false;
+            return (trace.Level & this.Level) == trace.Level;
         }
         #endregion
 

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema id="Fosol"
+<xs:schema id="Fosol.Diagnostics"
     targetNamespace="http://diagnostics.fosol.ca/Fosol.Diagnostics.xsd"
     elementFormDefault="qualified"
     xmlns="http://diagnostics.fosol.ca/Fosol.Diagnostics.xsd"
@@ -11,94 +11,130 @@
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
-          <xs:element name="sharedFilters" type="filters"/>
-          <xs:element name="sharedListeners" type="listeners"/>
-          <xs:element name="sources" type="sources"/>
+          <xs:element name="sharedFilters" type="sharedFilters"/>
+          <xs:element name="sharedListeners" type="sharedListeners"/>
           <xs:element name="trace" type="trace"/>
         </xs:choice>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="listeners">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:choice>
-        <xs:element name="add" type="addListener"/>
-        <xs:element name="clear"/>
+  <xs:complexType name="sharedFilters">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="add" type="sharedFilter"/>
+        <xs:element name="remove" type="sharedFilter"/>
+        <xs:element name="clear" type="xs:string"/>
       </xs:choice>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="addListener">
-    <xs:sequence minOccurs="0" maxOccurs="3">
-      <xs:sequence>
-        <xs:choice>
-          <xs:element name="initialize" type="args" maxOccurs="1"/>
-          <xs:element name="settings" type="args" maxOccurs="1"/>
-          <xs:element name="filters" type="filters" maxOccurs="1"/>
-        </xs:choice>
-      </xs:sequence>
+  <xs:complexType name="sharedFilter">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="set" type="setting"/>
+      </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="type" type="xs:string" use="required"/>
+    <xs:attribute name="condition" type="filterCondition" use="optional" default="And"/>
   </xs:complexType>
 
-  <xs:complexType name="args">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:choice>
-        <xs:element name="add" type="addArgs" maxOccurs="unbounded"/>
-        <xs:element name="clear"/>
+  <xs:complexType name="sharedListeners">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="add" type="sharedListener"/>
+        <xs:element name="remove" type="sharedListener"/>
+        <xs:element name="clear" type="xs:string"/>
       </xs:choice>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="addArgs">
+  <xs:complexType name="sharedListener">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="filters" type="filters"/>
+        <xs:element name="set" type="setting"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="trace">
+    <xs:sequence>
+      <xs:choice>
+        <xs:element name="listeners" type="listeners"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="autoFlush" type="xs:boolean" default="false" use="optional"/>
+    <xs:attribute name="flushOnExit" type="xs:boolean" default="false" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="filters">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="add" type="filter"/>
+        <xs:element name="remove" type="filter"/>
+        <xs:element name="clear" type="xs:string"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="filter">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="set" type="setting"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="optional"/>
+    <xs:attribute name="condition" type="filterCondition" use="optional" default="And"/>
+  </xs:complexType>
+
+  <xs:complexType name="listeners">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="add" type="listener"/>
+        <xs:element name="remove" type="listener"/>
+        <xs:element name="clear" type="xs:string"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="listener">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="filters" type="filters"/>
+        <xs:element name="set" type="setting"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="setting">
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="value" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="filters">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:choice>
-        <xs:element name="add" type="addFilter" maxOccurs="unbounded"/>
-        <xs:element name="clear"/>
-      </xs:choice>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="addFilter">
-    <xs:sequence minOccurs="0" maxOccurs="2">
-      <xs:choice>
-        <xs:element name="initialize" type="args" maxOccurs="1"/>
-        <xs:element name="settings" type="args" maxOccurs="1"/>
-      </xs:choice>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="type" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:complexType name="sources">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:choice>
-        <xs:element name="add" type="addSource" maxOccurs="unbounded"/>
-        <xs:element name="clear"/>
-      </xs:choice>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="addSource">
-    <xs:sequence minOccurs="0" maxOccurs="1">
-      <xs:element name="listeners" type="listeners"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-  </xs:complexType>
-
-  <xs:complexType name="trace">
-    <xs:sequence minOccurs="0" maxOccurs="1">
-      <xs:element name="listeners" type="listeners"/>
-    </xs:sequence>
-    <xs:attribute name="autoFlush" type="xs:boolean" default="false"/>
-    <xs:attribute name="autoRefresh" type="xs:boolean" default="false"/>
-    <xs:attribute name="flushOnExit" type="xs:boolean" default="false"/>
-  </xs:complexType>
+  <xs:simpleType name="filterCondition">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="And"/>
+          <xs:enumeration value="Or"/>
+          <xs:enumeration value="Xor"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[Aa][Nn][Dd]"/>
+          <xs:pattern value="[Oo][Rr]"/>
+          <xs:pattern value="[Xx][Oo][Rr]"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  
 </xs:schema>

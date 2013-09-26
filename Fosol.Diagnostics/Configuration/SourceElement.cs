@@ -1,32 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
+    /// <summary>
+    /// SourceElement provides a way to configure TraceListener objects for specific sources.
+    /// </summary>
     internal class SourceElement
-        : ConfigurationElement
+        : System.Configuration.ConfigurationElement
     {
         #region Variables
-        private const string _NameKey = "name";
-        private const string _ListenersKey = "listeners";
         #endregion
 
         #region Properties
-        [ConfigurationProperty(_NameKey, IsRequired = true, IsKey = true)]
+        /// <summary>
+        /// get/set - A unique name to identify this source.
+        /// </summary>
+        [System.Configuration.ConfigurationProperty("name", IsKey = true, IsRequired = true)]
         public string Name
         {
-            get { return (string)base[_NameKey]; }
-            set { base[_NameKey] = value; }
+            get { return (string)this["name"]; }
+            set { this["name"] = value; }
         }
 
-        [ConfigurationProperty(_ListenersKey)]
+        /// <summary>
+        /// get/set - Collection of TraceListener objects that listen for trace messages.
+        /// </summary>
+        [System.Configuration.ConfigurationProperty("listeners")]
         public ListenerElementCollection Listeners
         {
-            get { return (ListenerElementCollection)base[_ListenersKey]; }
-            set { base[_ListenersKey] = value; }
+            get { return (ListenerElementCollection)this["listeners"]; }
+            set { this["listeners"] = value; }
         }
         #endregion
 

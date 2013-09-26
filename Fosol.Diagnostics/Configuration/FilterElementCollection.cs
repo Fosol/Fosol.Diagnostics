@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
-    [ConfigurationCollection(typeof(FilterElement), CollectionType = ConfigurationElementCollectionType.AddRemoveClearMap)]
+    [System.Configuration.ConfigurationCollection(
+        typeof(FilterElement), 
+        CollectionType = System.Configuration.ConfigurationElementCollectionType.AddRemoveClearMap,
+        AddItemName = "add",
+        RemoveItemName = "remove",
+        ClearItemsName = "clear")]
     internal class FilterElementCollection
         : Fosol.Common.Configuration.ConfigurationElementCollection<FilterElement>
     {
@@ -20,21 +24,7 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Checks all the filters to confirm whether this TraceEvent should be sent to the listeners.
-        /// </summary>
-        /// <param name="traceEvent">TraceEvent object.</param>
-        /// <returns>'True' if the TraceEvent should be sent to the listeners.</returns>
-        public bool ShouldTrace(TraceEvent traceEvent)
-        {
-            foreach (var filter in this)
-            {
-                if (filter.GetFilter().ShouldTrace(traceEvent))
-                    return true;
-            }
 
-            return false;
-        }
         #endregion
 
         #region Operators

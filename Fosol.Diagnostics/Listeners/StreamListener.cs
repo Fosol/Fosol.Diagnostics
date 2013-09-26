@@ -1,8 +1,6 @@
-﻿using Fosol.Common.Extensions.Objects;
-using Fosol.Common.Extensions.Strings;
+﻿using Fosol.Common.Extensions.Strings;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,14 +9,13 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics.Listeners
 {
     /// <summary>
-    /// Writes messages to the specified Stream.
+    /// Provides a way to write to the specified Stream.
     /// </summary>
-    public class StreamListener
+    public sealed class StreamListener
         : TraceListener
     {
         #region Variables
         private Stream _Writer;
-        private bool _UseData;
         #endregion
 
         #region Properties
@@ -29,18 +26,6 @@ namespace Fosol.Diagnostics.Listeners
         {
             get { return _Writer; }
             set { _Writer = value; }
-        }
-
-        /// <summary>
-        /// get/set - Controls what will be written to the stream.
-        /// If UseData = 'true' it will write the TraceEvent.Data property to the stream instead of the rendered message.
-        /// </summary>
-        [DefaultValue(false)]
-        [TraceSetting("UseData")]
-        public bool UseData
-        {
-            get { return _UseData; }
-            set { _UseData = value; }
         }
         #endregion
 
@@ -73,33 +58,11 @@ namespace Fosol.Diagnostics.Listeners
         {
             try
             {
-                if (!this.UseData)
+                var message = this.Render(traceEvent);
+                if (message != null)
                 {
-                    var message = this.Render(traceEvent);
-                    if (message != null)
-                    {
-                        var bytes = message.ToByteArray(this.Encoding);
-                        this.Writer.Write(bytes, 0, bytes.Length);
-                    }
-                }
-                else if (traceEvent.Data != null)
-                {
-                    if (traceEvent.Data is byte[])
-                    {
-                        var data = traceEvent.Data as byte[];
-                        if (data != null)
-                        {
-                            this.Writer.Write(data, 0, data.Length);
-                        }
-                    }
-                    else
-                    {
-                        var data = traceEvent.Data.ToByteArray();
-                        if (data != null)
-                        {
-                            this.Writer.Write(data, 0, data.Length);
-                        }
-                    }
+                    var bytes = message.ToByteArray(this.Encoding);
+                    this.Writer.Write(bytes, 0, bytes.Length);
                 }
             }
             catch (ObjectDisposedException)

@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace Fosol.Diagnostics.Test.Console
 {
+    /// <summary>
+    /// Console program provides testcases for Fosol.Diagnostics library.
+    /// </summary>
     class Program
     {
         #region Variables
@@ -19,13 +22,17 @@ namespace Fosol.Diagnostics.Test.Console
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Test the Fosol.Diagnostics library.
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
             var program = new Program();
             var stop = false;
             do
             {
-                program.SingleThread();
+                program.MultiThread();
                 var key = System.Console.ReadKey();
 
                 if (key.Key == ConsoleKey.Escape)
@@ -36,11 +43,17 @@ namespace Fosol.Diagnostics.Test.Console
             while (!stop);
         }
 
+        /// <summary>
+        /// Use the current thread to write to Fosol.Diagnostics.
+        /// </summary>
         public void SingleThread()
         {
             Write();
         }
 
+        /// <summary>
+        /// Use multiple threads to write to Fosol.Diagnostics.
+        /// </summary>
         public void MultiThread()
         {
             var threads = new System.Threading.Thread[10];
@@ -61,6 +74,9 @@ namespace Fosol.Diagnostics.Test.Console
             }
         }
 
+        /// <summary>
+        /// Write a message for every TraceLevel.
+        /// </summary>
         public void Write()
         {
             _Trace.Header();

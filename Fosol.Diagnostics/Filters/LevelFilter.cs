@@ -35,7 +35,7 @@ namespace Fosol.Diagnostics.Filters
         /// <returns>'True' if the TraceEvent should be sent to the TraceListeners.</returns>
         protected override bool OnValidate(TraceEvent trace)
         {
-            return (trace.Level & this.Level) == trace.Level;
+            return (int)trace.Level >= (int)this.Level;
         }
         #endregion
 

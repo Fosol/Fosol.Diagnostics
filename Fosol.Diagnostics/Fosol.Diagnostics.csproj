@@ -82,7 +82,7 @@
     <Compile Include="Elements\TraceLevelElement.cs" />
     <Compile Include="Elements\TraceSourceElement.cs" />
     <Compile Include="Elements\TraceThreadElement.cs" />
-    <Compile Include="Listeners\ColoredConsoleListener.cs" />
+    <Compile Include="Listeners\ColorConsoleListener.cs" />
     <Compile Include="Listeners\ConsoleListener.cs" />
     <Compile Include="Listeners\TextFileListener.cs" />
     <Compile Include="Listeners\TextWriterListener.cs" />

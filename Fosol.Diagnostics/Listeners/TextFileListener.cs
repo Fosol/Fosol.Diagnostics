@@ -22,18 +22,27 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Properties
+        /// <summary>
+        /// get - The name of the log file (may also include path).
+        /// </summary>
         public Format Filename
         {
             get { return _Filename; }
             private set { _Filename = value; }
         }
 
+        /// <summary>
+        /// get/set - The FileStream object used to create and write to the log file.
+        /// </summary>
         private FileStream Stream
         {
             get { return _Stream; }
             set { _Stream = value; }
         }
 
+        /// <summary>
+        /// get/set - Whether The TextFileListener should create the directories that the file will be created in.
+        /// </summary>
         [TraceSetting("CreateDirectory")]
         [DefaultValue(true)]
         public bool CreateDirectory
@@ -42,6 +51,9 @@ namespace Fosol.Diagnostics.Listeners
             set { _CreateDirectory = value; }
         }
 
+        /// <summary>
+        /// get/set - Whether the log file should be deleted every time the FileStream is initialized.
+        /// </summary>
         [TraceSetting("DeleteFileOnStart")]
         public bool DeleteFileOnStart
         {
@@ -51,6 +63,11 @@ namespace Fosol.Diagnostics.Listeners
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new instance of a TextFileListener object.
+        /// The default location of the log file is the same directory as the 
+        /// </summary>
+        /// <param name="filename">The name of the log file (may also include the path).</param>
         public TextFileListener(string filename)
         {
             Fosol.Common.Validation.Assert.IsNotNullOrEmpty(filename, "filename");
@@ -59,6 +76,10 @@ namespace Fosol.Diagnostics.Listeners
             this.Filename = parser.Parse(filename);
         }
 
+        /// <summary>
+        /// Creates a new instance of a TextFileListener object.
+        /// </summary>
+        /// <param name="filename">The name of the log file (may also include the path).</param>
         [TraceSetting("Filename", typeof(Fosol.Common.Parsers.Converters.FormatConverter))]
         public TextFileListener(Format filename)
             : base()
@@ -111,7 +132,56 @@ namespace Fosol.Diagnostics.Listeners
             // Create or open the file at the specified path.
             this.Stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
             this.Stream.Position = this.Stream.Length;
-            this.Writer = new StreamWriter(this.Stream, this.Encoding);
+            var stream = new StreamWriter(this.Stream, this.Encoding, this.BufferSize);
+
+            switch (this.AutoFlush)
+            {
+                case (AutoFlushOption.BufferFull):
+                    stream.AutoFlush = true;
+                    break;
+                case (AutoFlushOption.EveryWrite):
+                default:
+                    stream.AutoFlush = false;
+                    break;
+            }
+            this.Writer = stream;
+        }
+
+        /// <summary>
+        /// Write the TraceEvent message to the TextWriter stream.
+        /// </summary>
+        /// <param name="trace">TraceEvent object.</param>
+        protected override void OnWrite(TraceEvent trace)
+        {
+            if (this.Writer == null)
+                return;
+
+            var message = this.Render(trace);
+            try
+            {
+                // The StreamWriter automatically does flushing, so we don't have to do it manually.
+                if (this.AutoFlush == AutoFlushOption.BufferFull)
+                    this.Writer.Write(message);
+                else
+                {
+                    var length = this.Encoding.GetByteCount(message);
+
+                    if (this.AutoFlush == AutoFlushOption.BufferFull
+                        && this.BufferUsed + length >= this.BufferSize)
+                        this.Flush();
+
+                    this.Writer.Write(message);
+
+                    this.BufferUsed += length;
+
+                    if (this.AutoFlush == AutoFlushOption.EveryWrite)
+                        this.Flush();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+
+            }
         }
 
         /// <summary>

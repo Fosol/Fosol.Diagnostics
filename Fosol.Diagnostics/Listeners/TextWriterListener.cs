@@ -59,7 +59,7 @@ namespace Fosol.Diagnostics.Listeners
         /// <summary>
         /// get/set - Controls whether after every write it will flush.
         /// </summary>
-        [DefaultValue(AutoFlushOption.Never)]
+        [DefaultValue(AutoFlushOption.BufferFull)]
         [TraceSetting("AutoFlush", typeof(EnumConverter), typeof(AutoFlushOption))]
         public AutoFlushOption AutoFlush
         {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Fosol.Diagnostics
 {
@@ -16,6 +17,7 @@ namespace Fosol.Diagnostics
         : IDisposable
     {
         #region Variables
+        private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private const string _DefaultFormat = "{level}: [{id}] {source}: {datetime}: {message}{newline}";
         private Format _Format;
         private Format _DebugFormat;
@@ -233,13 +235,21 @@ namespace Fosol.Diagnostics
         /// <param name="trace">TraceEvent object.</param>
         public void Write(TraceEvent trace)
         {
-            if (OnBeforeWrite(trace))
+            _Lock.EnterWriteLock();
+            try
             {
-                if (Validate(trace))
+                if (OnBeforeWrite(trace))
                 {
-                    OnWrite(trace);
-                    OnAfterWrite(trace);
+                    if (Validate(trace))
+                    {
+                        OnWrite(trace);
+                        OnAfterWrite(trace);
+                    }
                 }
+            }
+            finally
+            {
+                _Lock.ExitWriteLock();
             }
         }
 

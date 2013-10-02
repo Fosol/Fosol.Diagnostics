@@ -25,9 +25,8 @@ namespace Fosol.Diagnostics.Test.Console
             var stop = false;
             do
             {
-                program.MultiThread();
+                program.SingleThread();
                 var key = System.Console.ReadKey();
-                System.Console.WriteLine("----------------------");
 
                 if (key.Key == ConsoleKey.Escape)
                     stop = true;
@@ -64,6 +63,7 @@ namespace Fosol.Diagnostics.Test.Console
 
         public void Write()
         {
+            _Trace.Header();
             _Trace.Write(TraceLevel.Start, "Start message");
             _Trace.Write(TraceLevel.Debug, "Debug message");
             _Trace.Write("Information message");
@@ -73,6 +73,7 @@ namespace Fosol.Diagnostics.Test.Console
             _Trace.Write(TraceLevel.Suspend, "Suspend message");
             _Trace.Write(TraceLevel.Resume, "Resume message");
             _Trace.Write(TraceLevel.Stop, "Stop message");
+            _Trace.Footer();
         }
         #endregion
 

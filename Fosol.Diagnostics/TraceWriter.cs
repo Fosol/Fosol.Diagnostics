@@ -131,6 +131,24 @@ namespace Fosol.Diagnostics
         {
             this.Manager.Write(trace);
         }
+
+        /// <summary>
+        /// Write a header message to TraceListeners.
+        /// </summary>
+        /// <param name="message">Message to write to TraceListeners.</param>
+        public void Header(string message = null)
+        {
+            Write(new TraceEvent(this, TraceSpot.Header, message));
+        }
+
+        /// <summary>
+        /// Write a footer message to TraceListeners.
+        /// </summary>
+        /// <param name="message">Message to write to TraceListeners.</param>
+        public void Footer(string message = null)
+        {
+            Write(new TraceEvent(this, TraceSpot.Footer, message));
+        }
         #endregion
 
         #region Operators

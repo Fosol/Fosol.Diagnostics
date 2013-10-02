@@ -27,6 +27,8 @@ namespace Fosol.Diagnostics
         private Format _StopFormat;
         private Format _SuspendFormat;
         private Format _ResumeFormat;
+        private Format _HeaderFormat;
+        private Format _FooterFormat;
         private bool _UseEventLevelFormat;
         private Encoding _Encoding;
         private readonly TraceFilterCollection _Filters = new TraceFilterCollection();
@@ -37,6 +39,7 @@ namespace Fosol.Diagnostics
         /// get/set - The default trace format for messages.
         /// </summary>
         [TraceSetting("Format", ConverterType = typeof(FormatConverter))]
+        [DefaultValue(_DefaultFormat)]
         public Format Format
         {
             get { return _Format; }
@@ -170,6 +173,26 @@ namespace Fosol.Diagnostics
         }
 
         /// <summary>
+        /// get/set - The format for the header message.
+        /// </summary>
+        [TraceSetting("HeaderFormat", ConverterType = typeof(FormatConverter))]
+        public Format HeaderFormat
+        {
+            get { return _HeaderFormat; }
+            set { _HeaderFormat = value; }
+        }
+
+        /// <summary>
+        /// get/set - The format for the footer message.
+        /// </summary>
+        [TraceSetting("FooterFormat", ConverterType = typeof(FormatConverter))]
+        public Format FooterFormat
+        {
+            get { return _FooterFormat; }
+            set { _FooterFormat = value; }
+        }
+
+        /// <summary>
         /// get/set - The encoding messages should use.
         /// </summary>
         [DefaultValue("Default")]
@@ -293,32 +316,41 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// Apply the correct format to the TraceEvent message.
         /// </summary>
-        /// <param name="traceEvent">TraceEvent object being passed to the listener.</param>
+        /// <param name="trace">TraceEvent object being passed to the listener.</param>
         /// <returns>Dynamically generated message.</returns>
-        protected string Render(TraceEvent traceEvent)
+        protected string Render(TraceEvent trace)
         {
-            if (!_UseEventLevelFormat)
-                return this.Format.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Critical && this.CriticalFormat != null)
-                return this.CriticalFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Error && this.ErrorFormat != null)
-                return this.ErrorFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Warning && this.WarningFormat != null)
-                return this.WarningFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Information && this.InformationFormat != null)
-                return this.InformationFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Debug && this.DebugFormat != null)
-                return this.DebugFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Start && this.StartFormat != null)
-                return this.StartFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Stop && this.StopFormat != null)
-                return this.StopFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Suspend && this.SuspendFormat != null)
-                return this.SuspendFormat.Render(traceEvent);
-            else if (traceEvent.Level == TraceLevel.Resume && this.ResumeFormat != null)
-                return this.ResumeFormat.Render(traceEvent);
+            if (trace.Position == TraceSpot.Message)
+            {
+                if (!_UseEventLevelFormat)
+                    return this.Format.Render(trace);
+                else if (trace.Level == TraceLevel.Critical && this.CriticalFormat != null)
+                    return this.CriticalFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Error && this.ErrorFormat != null)
+                    return this.ErrorFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Warning && this.WarningFormat != null)
+                    return this.WarningFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Information && this.InformationFormat != null)
+                    return this.InformationFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Debug && this.DebugFormat != null)
+                    return this.DebugFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Start && this.StartFormat != null)
+                    return this.StartFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Stop && this.StopFormat != null)
+                    return this.StopFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Suspend && this.SuspendFormat != null)
+                    return this.SuspendFormat.Render(trace);
+                else if (trace.Level == TraceLevel.Resume && this.ResumeFormat != null)
+                    return this.ResumeFormat.Render(trace);
+                else
+                    return this.Format.Render(trace);
+            }
+            else if (trace.Position == TraceSpot.Header)
+                return this.HeaderFormat.Render(trace);
+            else if (trace.Position == TraceSpot.Footer)
+                return this.FooterFormat.Render(trace);
             else
-                return this.Format.Render(traceEvent);
+                return this.Format.Render(trace);
         }
 
         /// <summary>

@@ -16,6 +16,7 @@
           <xs:element name="trace" type="trace"/>
         </xs:choice>
       </xs:sequence>
+      <xs:attribute name="throwOnError" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
   </xs:element>
 

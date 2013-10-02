@@ -100,6 +100,7 @@
     <Compile Include="TraceListenerCollection.cs" />
     <Compile Include="TraceManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TraceSpot.cs" />
     <Compile Include="TraceSettingAttribute.cs" />
     <Compile Include="TraceWriter.cs" />
   </ItemGroup>

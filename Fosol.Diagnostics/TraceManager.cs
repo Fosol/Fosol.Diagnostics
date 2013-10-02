@@ -60,7 +60,14 @@ namespace Fosol.Diagnostics
         public bool ThrowOnError
         {
             get { return _ThrowOnError; }
-            set { _ThrowOnError = value; }
+            set 
+            {
+                if (this.Config != null)
+                {
+                    this.Config.ThrowOnError = value;
+                }
+                _ThrowOnError = value; 
+            }
         }
 
         /// <summary>
@@ -97,6 +104,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         public TraceManager()
         {
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
         }
 
         /// <summary>
@@ -141,7 +149,7 @@ namespace Fosol.Diagnostics
             {
                 if (_Config.Section != null)
                 {
-                    this.ThrowOnError = _Config.ThrowOnError;
+                    this.ThrowOnError = _Config.Section.ThrowOnError;
                     this.AutoFlush = _Config.Section.Trace.AutoFlush;
                     this.FlushOnExit = _Config.Section.Trace.FlushOnExit;
 
@@ -446,6 +454,9 @@ namespace Fosol.Diagnostics
                     try
                     {
                         listener.Write(trace);
+
+                        if (this.AutoFlush)
+                            listener.Flush();
                     }
                     catch (Exception ex)
                     {
@@ -491,6 +502,37 @@ namespace Fosol.Diagnostics
                 throw args.Exception;
             else
                 Error.Raise(sender, new Events.ConfigurationExceptionEventArgs(args.Exception));
+        }
+
+        /// <summary>
+        /// Detects when application exits and if the FlushOnExit='true' it will call the Flush method on each Listener.
+        /// </summary>
+        /// <param name="sender">Source of this method call.</param>
+        /// <param name="e">EventArgs object.</param>
+        void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            if (this.FlushOnExit)
+            {
+                _Lock.EnterReadLock();
+                try
+                {
+                    foreach (var listener in this.Listeners)
+                    {
+                        try
+                        {
+                            listener.Flush();
+                        }
+                        catch (Exception ex)
+                        {
+                            OnError(this, new Common.Configuration.Events.ConfigurationSectionErrorEventArgs(ex));
+                        }
+                    }
+                }
+                finally
+                {
+                    _Lock.ExitReadLock();
+                }
+            }
         }
         #endregion
     }

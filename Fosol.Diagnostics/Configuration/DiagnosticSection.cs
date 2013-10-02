@@ -28,6 +28,16 @@ namespace Fosol.Diagnostics.Configuration
         }
 
         /// <summary>
+        /// get/set - Whether errors will be thrown as exceptions.
+        /// </summary>
+        [ConfigurationProperty("throwOnError")]
+        public bool ThrowOnError
+        {
+            get { return (Boolean)this["throwOnError"]; }
+            set { this["throwOnError"] = value; }
+        }
+
+        /// <summary>
         /// get/set - Configuration for generic trace messages.
         /// </summary>
         [ConfigurationProperty("trace")]

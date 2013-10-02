@@ -16,6 +16,7 @@ namespace Fosol.Diagnostics
         private readonly DateTime _CreatedDate;
         private readonly TraceWriter _Writer;
         private readonly TraceLevel _Level;
+        private readonly TraceSpot _Position;
         private readonly int _Id;
         private readonly string _Message;
         private readonly InstanceProcess _Process;
@@ -44,6 +45,11 @@ namespace Fosol.Diagnostics
         public TraceLevel Level { get { return _Level; } }
 
         /// <summary>
+        /// get - The TracePosition of this message.
+        /// </summary>
+        internal TraceSpot Position { get { return _Position; } }
+
+        /// <summary>
         /// get - The message describing this trace.
         /// </summary>
         public string Message { get { return _Message; } }
@@ -62,12 +68,25 @@ namespace Fosol.Diagnostics
         #region Constructors
         /// <summary>
         /// Creates a new instance of a TraceEvent object.
+        /// This constructor is used for header and footer messages.
+        /// </summary>
+        /// <param name="writer">TraceWriter where this TraceEvent originated.</param>
+        /// <param name="position">TracePosition of this message.</param>
+        /// <param name="message">Message to describe this TraceEvent.</param>
+        internal TraceEvent(TraceWriter writer, TraceSpot position, string message)
+            : this(writer, TraceLevel.Information, position, -1, message)
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of a TraceEvent object.
         /// </summary>
         /// <param name="writer">TraceWriter where this TraceEvent originated.</param>
         /// <param name="level">TraceLevel of this message.</param>
         /// <param name="message">Message to describe this TraceEvent.</param>
         public TraceEvent(TraceWriter writer, TraceLevel level, string message)
-            : this(writer, level, -1, message)
+            : this(writer, level, TraceSpot.Message, -1, message)
         {
         }
 
@@ -79,12 +98,26 @@ namespace Fosol.Diagnostics
         /// <param name="id">Unique identity of this message.</param>
         /// <param name="message">Message to describe this TraceEvent.</param>
         public TraceEvent(TraceWriter writer, TraceLevel level, int id, string message)
+            : this(writer, level, TraceSpot.Message, id, message)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of a TraceEvent object.
+        /// </summary>
+        /// <param name="writer">TraceWriter where this TraceEvent originated.</param>
+        /// <param name="level">TraceLevel of this message.</param>
+        /// <param name="position">TracePosition of this message.</param>
+        /// <param name="id">Unique identity of this message.</param>
+        /// <param name="message">Message to describe this TraceEvent.</param>
+        private TraceEvent(TraceWriter writer, TraceLevel level, TraceSpot position, int id, string message)
         {
             _CreatedDate = Fosol.Common.Optimization.FastDateTime.UtcNow;
             _Process = new InstanceProcess();
             _Thread = new InstanceThread();
             _Writer = writer;
             _Level = level;
+            _Position = position;
             _Id = id;
             _Message = message;
         }

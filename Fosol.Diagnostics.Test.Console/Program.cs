@@ -32,7 +32,8 @@ namespace Fosol.Diagnostics.Test.Console
             var stop = false;
             do
             {
-                program.MultiThread();
+                program.SingleThread();
+                //program.MultiThread();
                 var key = System.Console.ReadKey();
 
                 if (key.Key == ConsoleKey.Escape)

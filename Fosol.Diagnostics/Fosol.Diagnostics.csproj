@@ -104,10 +104,7 @@
     <Compile Include="TraceSettingAttribute.cs" />
     <Compile Include="TraceWriter.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Converters\" />
-    <Folder Include="Extensions\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Fosol.Diagnostics.xsd">

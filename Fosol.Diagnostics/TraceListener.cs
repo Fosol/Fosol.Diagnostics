@@ -19,6 +19,8 @@ namespace Fosol.Diagnostics
         #region Variables
         private readonly ReaderWriterLockSlim _Lock = new ReaderWriterLockSlim();
         private const string _DefaultFormat = "{level}: [{id}] {source}: {datetime}: {message}{newline}";
+        private const string _DefaultHeaderFormat = "{newline}";
+        private const string _DefaultFooterFormat = "{newline}";
         private Format _Format;
         private Format _DebugFormat;
         private Format _InformationFormat;
@@ -40,12 +42,17 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get/set - The default trace format for messages.
         /// </summary>
+        /// <exception cref="System.ArgumentNullException">Format cannot be null.</exception>
         [TraceSetting("Format", ConverterType = typeof(FormatConverter))]
         [DefaultValue(_DefaultFormat)]
         public Format Format
         {
             get { return _Format; }
-            set {  _Format = value; }
+            set 
+            {
+                Fosol.Common.Validation.Assert.IsNotNull(value, "value");
+                _Format = value; 
+            }
         }
 
         /// <summary>
@@ -177,21 +184,33 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get/set - The format for the header message.
         /// </summary>
+        /// <exception cref="System.ArgumentNullException">HeaderFormat cannot be null.</exception>
         [TraceSetting("HeaderFormat", ConverterType = typeof(FormatConverter))]
+        [DefaultValue(_DefaultHeaderFormat)]
         public Format HeaderFormat
         {
             get { return _HeaderFormat; }
-            set { _HeaderFormat = value; }
+            set 
+            {
+                Fosol.Common.Validation.Assert.IsNotNull(value, "value");
+                _HeaderFormat = value; 
+            }
         }
 
         /// <summary>
         /// get/set - The format for the footer message.
         /// </summary>
+        /// <exception cref="System.ArgumentNullException">FooterFormat cannot be null.</exception>
         [TraceSetting("FooterFormat", ConverterType = typeof(FormatConverter))]
+        [DefaultValue(_DefaultFooterFormat)]
         public Format FooterFormat
         {
             get { return _FooterFormat; }
-            set { _FooterFormat = value; }
+            set
+            {
+                Fosol.Common.Validation.Assert.IsNotNull(value, "value");
+                _FooterFormat = value;
+            }
         }
 
         /// <summary>

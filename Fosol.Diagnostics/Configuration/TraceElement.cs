@@ -49,6 +49,30 @@ namespace Fosol.Diagnostics.Configuration
 
         #region Methods
 
+        /// <summary>
+        /// Add the DefaultListener to the collection.
+        /// </summary>
+        protected override void InitializeDefault()
+        {
+            base.InitializeDefault();
+            InternalInitializeDefault();
+        }
+
+        /// <summary>
+        /// Add the DefaultListener to the collection if in DEBUG mode.
+        /// </summary>
+        internal void InternalInitializeDefault()
+        {
+#if DEBUG
+            // Only add the DebugListener in debug mode.
+            var default_listener = new ListenerElement()
+            {
+                Name = "Debug",
+                ListenerTypeName = typeof(Fosol.Diagnostics.Listeners.DebugListener).FullName
+            };
+            this.Listeners.Add(default_listener);
+#endif
+        }
         #endregion
 
         #region Operators

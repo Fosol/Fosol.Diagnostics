@@ -79,6 +79,14 @@ namespace Fosol.Diagnostics.Configuration
         {
             this.ListenerTypeName = sharedListener.ListenerTypeName;
 
+            // Add addition constructor settings from the shared listener.
+            foreach (var setting in sharedListener.Constructor)
+            {
+                // Only add the settings from the sharedListener if it doesn't already exist here.
+                if (this.Constructor.FirstOrDefault(s => s.Name.Equals(setting.Name)) == null)
+                    this.Constructor.Add(setting);
+            }
+
             // Add additional settings from the shared listener.
             foreach (var setting in sharedListener.Settings)
             {

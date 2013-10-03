@@ -65,6 +65,7 @@
     <Compile Include="Exceptions\TraceConfigurationException.cs" />
     <Compile Include="FilterCondition.cs" />
     <Compile Include="Listeners\DatabaseListener.cs" />
+    <Compile Include="Listeners\DebugListener.cs" />
     <Compile Include="Listeners\EventLogListener.cs" />
     <Compile Include="Listeners\MailListener.cs" />
     <Compile Include="Listeners\StreamListener.cs" />

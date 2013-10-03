@@ -333,58 +333,56 @@ namespace Fosol.Diagnostics
         private void ApplySettings(object obj, Configuration.SettingElementCollection settings)
         {
             var type = obj.GetType();
-            if (settings.Count() > 0)
-            {
-                // Fetch all property settings.
-                var properties = (
-                    from p in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                    where p.GetCustomAttributes(typeof(TraceSettingAttribute), true).Length > 0
-                    select new
-                    {
-                        Property = p,
-                        Attribute = (TraceSettingAttribute)p.GetCustomAttributes(typeof(TraceSettingAttribute), true).FirstOrDefault(),
-                        Required = (RequiredAttribute)p.GetCustomAttributes(typeof(RequiredAttribute), true).FirstOrDefault(),
-                        Default = (DefaultValueAttribute)p.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault()
-                    });
 
-                // Apply configuration setting values to the properties.
-                foreach (var prop in properties)
+            // Fetch all property settings.
+            var properties = (
+                from p in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                where p.GetCustomAttributes(typeof(TraceSettingAttribute), true).Length > 0
+                select new
                 {
-                    var setting = settings.FirstOrDefault(s => s.Name.Equals(prop.Attribute.Name, StringComparison.CurrentCultureIgnoreCase));
+                    Property = p,
+                    Attribute = (TraceSettingAttribute)p.GetCustomAttributes(typeof(TraceSettingAttribute), true).FirstOrDefault(),
+                    Required = (RequiredAttribute)p.GetCustomAttributes(typeof(RequiredAttribute), true).FirstOrDefault(),
+                    Default = (DefaultValueAttribute)p.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault()
+                });
 
-                    if (setting == null)
+            // Apply configuration setting values to the properties.
+            foreach (var prop in properties)
+            {
+                var setting = settings.FirstOrDefault(s => s.Name.Equals(prop.Attribute.Name, StringComparison.CurrentCultureIgnoreCase));
+
+                if (setting == null)
+                {
+                    // Use the default value.
+                    if (prop.Default != null)
                     {
-                        // Use the default value.
-                        if (prop.Default != null)
-                        {
-                            object val = null;
-                            if (prop.Default.Value.GetType() == prop.Property.PropertyType)
-                                prop.Property.SetValue(obj, prop.Default.Value);
-                            else if (prop.Attribute.TryConvert(prop.Default.Value, out val))
-                                prop.Property.SetValue(obj, val);
-                            else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(prop.Default.Value, prop.Property.PropertyType, ref val))
-                                prop.Property.SetValue(obj, val);
-                            else
-                                prop.Property.SetValue(obj, prop.Default.Value);
-                        }
-
-                        // The setting is required but it hasn't been configured.
-                        if (prop.Required != null)
-                            throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Required, setting.Name));
-
-                        continue;
+                        object val = null;
+                        if (prop.Default.Value.GetType() == prop.Property.PropertyType)
+                            prop.Property.SetValue(obj, prop.Default.Value);
+                        else if (prop.Attribute.TryConvert(prop.Default.Value, out val))
+                            prop.Property.SetValue(obj, val);
+                        else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(prop.Default.Value, prop.Property.PropertyType, ref val))
+                            prop.Property.SetValue(obj, val);
+                        else
+                            prop.Property.SetValue(obj, prop.Default.Value);
                     }
 
-                    object value = null;
+                    // The setting is required but it hasn't been configured.
+                    if (prop.Required != null)
+                        throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Required, setting.Name));
 
-                    // Apply the setting value to the property.
-                    if (prop.Attribute.TryConvert(setting.Value, out value))
-                        prop.Property.SetValue(obj, value);
-                    else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(setting.Value, prop.Property.PropertyType, ref value))
-                        prop.Property.SetValue(obj, value);
-                    else
-                        throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Value_Invalid, setting.Name));
+                    continue;
                 }
+
+                object value = null;
+
+                // Apply the setting value to the property.
+                if (prop.Attribute.TryConvert(setting.Value, out value))
+                    prop.Property.SetValue(obj, value);
+                else if (Fosol.Common.Helpers.ReflectionHelper.TryConvert(setting.Value, prop.Property.PropertyType, ref value))
+                    prop.Property.SetValue(obj, value);
+                else
+                    throw new Exceptions.SettingConfigurationException(string.Format(Resources.Strings.Exception_Configuration_Setting_Value_Invalid, setting.Name));
             }
         }
 

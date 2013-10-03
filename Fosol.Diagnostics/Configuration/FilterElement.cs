@@ -91,6 +91,14 @@ namespace Fosol.Diagnostics.Configuration
                 this.Condition = sharedFilter.Condition;
             }
 
+            // Add addition constructor settings from the shared filter.
+            foreach (var setting in sharedFilter.Constructor)
+            {
+                // Only add the settings from the sharedFilter if it doesn't already exist here.
+                if (this.Constructor.FirstOrDefault(s => s.Name.Equals(setting.Name)) == null)
+                    this.Constructor.Add(setting);
+            }
+
             // Add additional settings from the shared filter.
             foreach (var setting in sharedFilter.Settings)
             {

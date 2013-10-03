@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Fosol.Diagnostics.Configuration
 {
+    /// <summary>
+    /// A ListenerElementCollection contains a collection of ListenerElement configuration details.
+    /// </summary>
     [System.Configuration.ConfigurationCollection(
         typeof(ListenerElement),
         CollectionType = System.Configuration.ConfigurationElementCollectionType.AddRemoveClearMap,

@@ -72,7 +72,15 @@ namespace Fosol.Diagnostics.Configuration
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Ensures the default configuration is initialized.
+        /// </summary>
+        protected override void InitializeDefault()
+        {
+            base.InitializeDefault();
 
+            this.Trace.InternalInitializeDefault();
+        }
         #endregion
 
         #region Operators

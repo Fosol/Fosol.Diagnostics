@@ -48,6 +48,16 @@ namespace Fosol.Diagnostics.Configuration
         }
 
         /// <summary>
+        /// get/set - SettingElementCollection for constructing a new TraceFilter.
+        /// </summary>
+        [System.Configuration.ConfigurationProperty("constructor")]
+        public SettingElementCollection Constructor
+        {
+            get { return (SettingElementCollection)this["constructor"]; }
+            set { this["constructor"] = value; }
+        }
+
+        /// <summary>
         /// get/set - Collection of SettingElement objects.
         /// </summary>
         [System.Configuration.ConfigurationProperty("", IsDefaultCollection = true)]

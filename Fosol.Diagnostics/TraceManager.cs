@@ -190,7 +190,7 @@ namespace Fosol.Diagnostics
         {
             try
             {
-                var listener = CreateInstanceOf<TraceListener>(config.ListenerTypeName, config.Settings);
+                var listener = CreateInstanceOf<TraceListener>(config.ListenerTypeName, config.Constructor);
                 // Reference TraceFilters.
                 foreach (var filter_config in config.Filters)
                 {
@@ -228,7 +228,7 @@ namespace Fosol.Diagnostics
         {
             try
             {
-                var filter = CreateInstanceOf<TraceFilter>(config.FilterTypeName, config.Settings);
+                var filter = CreateInstanceOf<TraceFilter>(config.FilterTypeName, config.Constructor);
                 filter.Condition = config.Condition;
                 ApplySettings(filter, config.Settings);
                 filter.Initialize();
@@ -250,7 +250,7 @@ namespace Fosol.Diagnostics
         /// <exception cref="System.ArgumentNullException">Argument "type" must be a valid type.</exception>
         /// <typeparam name="T">Type of object to create a new instance of.</typeparam>
         /// <param name="typeName">Type name of object to create a new instance of.</param>
-        /// <param name="settings">Configuration settings.</param>
+        /// <param name="settings">Configuration.SettingElementCollection object containing constructor settings.</param>
         /// <returns>A new instance of an object of Type T.</returns>
         private T CreateInstanceOf<T>(string typeName, Configuration.SettingElementCollection settings)
         {
@@ -269,7 +269,7 @@ namespace Fosol.Diagnostics
         /// <exception cref="Exceptions.SettingConfigurationException">TraceSettingAttribute objects require a ConverterType when applied to constructors.</exception>
         /// <typeparam name="T">Type of object to create a new instance of.</typeparam>
         /// <param name="type">Type of object to create a new instance of.</param>
-        /// <param name="settings">Configuration settings.</param>
+        /// <param name="settings">Configuration.SettingElementCollection object containing constructor settings.</param>
         /// <returns>A new instance of an object of Type T.</returns>
         private T CreateInstanceOf<T>(Type type, Configuration.SettingElementCollection settings)
         {
@@ -329,7 +329,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <exception cref="Exceptions.SettingConfigurationException">Invalid setting configuration for this object.</exception>
         /// <param name="obj">Object to update with setting values.</param>
-        /// <param name="settings">Configuration settings.</param>
+        /// <param name="settings">Configuration.SettingElementCollection object containing property settings.</param>
         private void ApplySettings(object obj, Configuration.SettingElementCollection settings)
         {
             var type = obj.GetType();

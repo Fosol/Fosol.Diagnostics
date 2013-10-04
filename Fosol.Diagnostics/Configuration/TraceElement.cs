@@ -59,7 +59,7 @@ namespace Fosol.Diagnostics.Configuration
         }
 
         /// <summary>
-        /// Add the DefaultListener to the collection if in DEBUG mode.
+        /// Add the DebugListener to the collection if in DEBUG mode.
         /// </summary>
         internal void InternalInitializeDefault()
         {

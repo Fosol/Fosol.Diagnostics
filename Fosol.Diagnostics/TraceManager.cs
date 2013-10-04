@@ -19,7 +19,7 @@ namespace Fosol.Diagnostics
         #region Variables
         private readonly System.Threading.ReaderWriterLockSlim _Lock = new System.Threading.ReaderWriterLockSlim();
         private static TraceManager _DefaultManager;
-        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> _Config;
+        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> _ConfigWatcher;
         private readonly TraceListenerCollection _Listeners = new TraceListenerCollection();
         private readonly SimpleCache<TraceWriter> _Writers = new SimpleCache<TraceWriter>();
         private bool _ThrowOnError = false;
@@ -31,10 +31,10 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - The Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> object.
         /// </summary>
-        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> Config
+        private Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection> ConfigWatcher
         {
-            get { return _Config; }
-            set { _Config = value; }
+            get { return _ConfigWatcher; }
+            set { _ConfigWatcher = value; }
         }
 
         /// <summary>
@@ -62,9 +62,9 @@ namespace Fosol.Diagnostics
             get { return _ThrowOnError; }
             set 
             {
-                if (this.Config != null)
+                if (this.ConfigWatcher != null)
                 {
-                    this.Config.ThrowOnError = value;
+                    this.ConfigWatcher.ThrowOnError = value;
                 }
                 _ThrowOnError = value; 
             }
@@ -115,11 +115,28 @@ namespace Fosol.Diagnostics
         public TraceManager(string sectionNameOrFilePath)
             : this()
         {
-            _Config = new Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection>(sectionNameOrFilePath);
-            _Config.ThrowOnError = this.ThrowOnError;
-            _Config.Error += OnError;
-            _Config.FileChanged += OnConfigChanged;
-            _Config.Start();
+            Fosol.Common.Validation.Assert.IsNotNullOrEmpty(sectionNameOrFilePath, "sectionNameOrFilePath");
+
+            _ConfigWatcher = new Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection>(sectionNameOrFilePath);
+            _ConfigWatcher.ThrowOnError = this.ThrowOnError;
+            _ConfigWatcher.Error += OnError;
+            _ConfigWatcher.FileChanged += OnConfigChanged;
+            _ConfigWatcher.Start();
+            Refresh();
+        }
+
+
+        public TraceManager(string externalConfigFilePath, string sectionName)
+            : this()
+        {
+            Fosol.Common.Validation.Assert.IsNotNullOrEmpty(externalConfigFilePath, "externalConfigFilePath");
+            Fosol.Common.Validation.Assert.IsNotNullOrEmpty(sectionName, "sectionName");
+
+            _ConfigWatcher = new Fosol.Common.Configuration.ConfigurationSectionFileWatcher<Configuration.DiagnosticSection>(externalConfigFilePath, sectionName);
+            _ConfigWatcher.ThrowOnError = this.ThrowOnError;
+            _ConfigWatcher.Error += OnError;
+            _ConfigWatcher.FileChanged += OnConfigChanged;
+            _ConfigWatcher.Start();
             Refresh();
         }
         #endregion
@@ -147,19 +164,19 @@ namespace Fosol.Diagnostics
             _Lock.EnterWriteLock();
             try
             {
-                if (_Config.Section != null)
+                if (this.ConfigWatcher.Section != null)
                 {
-                    this.ThrowOnError = _Config.Section.ThrowOnError;
-                    this.AutoFlush = _Config.Section.Trace.AutoFlush;
-                    this.FlushOnExit = _Config.Section.Trace.FlushOnExit;
+                    this.ThrowOnError = this.ConfigWatcher.Section.ThrowOnError;
+                    this.AutoFlush = this.ConfigWatcher.Section.Trace.AutoFlush;
+                    this.FlushOnExit = this.ConfigWatcher.Section.Trace.FlushOnExit;
 
                     // A flush may need to occur before the listeners are cleared.
                     this.Listeners.Clear();
 
                     // Generate the TraceListener collection.
-                    foreach (var listener_config in _Config.Section.Trace.Listeners)
+                    foreach (var listener_config in this.ConfigWatcher.Section.Trace.Listeners)
                     {
-                        var shared_listener = _Config.Section.SharedListeners.FirstOrDefault(l => l.Name.Equals(listener_config.Name));
+                        var shared_listener = this.ConfigWatcher.Section.SharedListeners.FirstOrDefault(l => l.Name.Equals(listener_config.Name));
 
                         // Merge the trace listener with the shared listener.
                         // This provides a way to modify/override a common configured listener.
@@ -194,7 +211,7 @@ namespace Fosol.Diagnostics
                 // Reference TraceFilters.
                 foreach (var filter_config in config.Filters)
                 {
-                    var shared_filter = _Config.Section.SharedFilters.FirstOrDefault(f => f.Name.Equals(filter_config.Name));
+                    var shared_filter = this.ConfigWatcher.Section.SharedFilters.FirstOrDefault(f => f.Name.Equals(filter_config.Name));
 
                     // Merge the filter with the shared filter.
                     // This provides a way to modify/override a common configured filter.

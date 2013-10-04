@@ -95,6 +95,7 @@
   <xs:complexType name="filter">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="constructor" type="constructor"/>
         <xs:element name="set" type="setting"/>
       </xs:choice>
     </xs:sequence>
@@ -117,6 +118,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="filters" type="filters"/>
+        <xs:element name="constructor" type="constructor"/>
         <xs:element name="set" type="setting"/>
       </xs:choice>
     </xs:sequence>

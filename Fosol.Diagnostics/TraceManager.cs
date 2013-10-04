@@ -100,7 +100,7 @@ namespace Fosol.Diagnostics
 
         /// <summary>
         /// Creates a new instance of a TraceManager object.
-        /// If you use this constructor it will not use a configuration file, you must configure through code.
+        /// If you use this constructor it will not use a configuration file by default, you must configure through code.
         /// </summary>
         public TraceManager()
         {

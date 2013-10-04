@@ -69,6 +69,7 @@
     <Compile Include="Listeners\EventLogListener.cs" />
     <Compile Include="Listeners\MailListener.cs" />
     <Compile Include="Listeners\StreamListener.cs" />
+    <Compile Include="Listeners\UnitTestListener.cs" />
     <Compile Include="TraceFilterCollection.cs" />
     <Compile Include="Filters\LevelFilter.cs" />
     <Compile Include="InstanceProcess.cs" />

@@ -10,14 +10,9 @@ namespace Fosol.Diagnostics.UnitTests
     public class ExternalAppConfigTest
     {
         #region Variables
-        private TestContext _TextContext;
         #endregion
 
         #region Properties
-        public TestContext TextContext
-        {
-            get { return _TextContext; }
-        }
         #endregion
 
         #region Constructors
@@ -28,14 +23,14 @@ namespace Fosol.Diagnostics.UnitTests
         /// Test the ConsoleListener configured with App01.config file.
         /// </summary>
         [TestMethod]
-        public void Console()
+        public void ConsoleTest()
         {
             // Send console information to this local stream so that it can be tested.
             var stream = new System.IO.MemoryStream();
             var writer = new System.IO.StreamWriter(stream);
             System.Console.SetOut(writer);
 
-            var log = Fosol.Diagnostics.Trace.GetManager("App01.config", "fosol.diagnostics").GetWriter(typeof(ExternalAppConfigTest));
+            var log = Fosol.Diagnostics.Trace.GetManager("ExternalApp01.config", "fosol.diagnostics").GetWriter(typeof(ExternalAppConfigTest));
             log.Write("test message");
 
             writer.Flush();

@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.20827.3
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Diagnostics", "Fosol.Diagnostics\Fosol.Diagnostics.csproj", "{922A65DB-9708-4147-9E1F-76724E90C70D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Diagnostics.Test.Console", "Fosol.Diagnostics.Test.Console\Fosol.Diagnostics.Test.Console.csproj", "{9AC48CA6-00BD-401A-9225-1C59ECB6339A}"

@@ -26,6 +26,11 @@ namespace Fosol.Diagnostics.UnitTests
             Assert.IsTrue(listener.LastMessage.Contains(msg), string.Format("TraceListener did not contain message '{0}'.", msg));
             Assert.IsTrue(trace.Tags.ContainsKey("Source"), "TraceListener 'Source' tag was not found.");
             Assert.IsFalse(trace.Tags.ContainsKey("source"), "TraceListener should be case-sensitive; lowercase 'source' tag was found.");
+
+            var filter = listener.GetFilter("source");
+
+            Assert.IsTrue(filter != null);
+            Assert.IsTrue(filter.Condition == FilterCondition.None);
         }
     }
 }

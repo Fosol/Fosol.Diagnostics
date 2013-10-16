@@ -222,7 +222,7 @@ namespace Fosol.Diagnostics
                     var filter = CreateFilter(filter_config);
 
                     if (filter != null)
-                        listener.Filters.Add(filter);
+                        listener.Filters.Add(filter_config.Name, filter);
                 }
                 ApplySettings(listener, config.Settings);
                 listener.Initialize();

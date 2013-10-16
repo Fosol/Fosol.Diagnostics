@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Fosol.Diagnostics
 {
     /// <summary>
-    /// Collection of TraceFilter objects.
+    /// TraceFilterCollection is a dictionary that contain TraceFilter objects.
     /// Provides a way to validate all filters.
     /// </summary>
     public sealed class TraceFilterCollection
-        : List<TraceFilter>
+        : Dictionary<string, TraceFilter>
     {
         #region Variables
         #endregion
@@ -31,8 +31,9 @@ namespace Fosol.Diagnostics
         public bool Validate(TraceEvent trace)
         {
             var valid = true;
-            foreach (var filter in this)
+            foreach (var key in this.Keys)
             {
+                var filter = this[key];
                 var validate = filter.Validate(trace);
                 if (filter.Condition == FilterCondition.None && !validate)
                     valid = false;

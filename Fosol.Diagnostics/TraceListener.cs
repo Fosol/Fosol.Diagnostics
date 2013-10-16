@@ -403,6 +403,16 @@ namespace Fosol.Diagnostics
         public virtual void Dispose()
         {
         }
+
+        /// <summary>
+        /// Get the TraceFilter identified by the specified name.
+        /// </summary>
+        /// <param name="name">Unique name that identifies the TraceFilter.</param>
+        /// <returns>TraceFilter object.</returns>
+        public TraceFilter GetFilter(string name)
+        {
+            return this.Filters.First(f => f.Key.Equals(name)).Value;
+        }
         #endregion
 
         #region Operators

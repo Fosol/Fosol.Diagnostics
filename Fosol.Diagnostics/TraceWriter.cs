@@ -14,7 +14,7 @@ namespace Fosol.Diagnostics
         #region Variables
         internal readonly System.Threading.ReaderWriterLockSlim _Lock = new System.Threading.ReaderWriterLockSlim();
         private readonly Type _SourceType;
-        private readonly TraceData _Data;
+        private readonly TraceTag _Tags;
         private readonly InstanceProcess _Process;
         private readonly InstanceThread _Thread;
         private readonly TraceManager _Manager;
@@ -29,7 +29,7 @@ namespace Fosol.Diagnostics
         /// <summary>
         /// get - Additional information included with this TraceWriter.
         /// </summary>
-        public TraceData Data { get { return _Data; } }
+        public TraceTag Tags { get { return _Tags; } }
 
         /// <summary>
         /// get - The Process this TraceEvent was created with.
@@ -56,8 +56,8 @@ namespace Fosol.Diagnostics
         /// </summary>
         /// <param name="manager">Reference to the TraceManager this writer belongs to.</param>
         /// <param name="source">Source object Type creating the TraceWriter.</param>
-        /// <param name="data"></param>
-        internal TraceWriter(TraceManager manager, Type source, TraceData data = null)
+        /// <param name="tags">TraceTag object contain tags for all TraceEvents created by this writer.</param>
+        internal TraceWriter(TraceManager manager, Type source, TraceTag tags = null)
         {
             Fosol.Common.Validation.Assert.IsNotNull(manager, "manager");
             Fosol.Common.Validation.Assert.IsNotNull(source, "source");
@@ -66,10 +66,17 @@ namespace Fosol.Diagnostics
             _SourceType = source;
 
             // From this point on the TraceData is readonly.
-            if (data != null)
-                data.IsReadonly = true;
+            if (tags != null)
+            {
+                tags.IsReadonly = true;
+                _Tags = tags;
+            }
+            else
+            {
+                _Tags = new TraceTag();
+                _Tags.IsReadonly = true;
+            }
 
-            _Data = data;
             _Process = new InstanceProcess();
             _Thread = new InstanceThread();
         }
@@ -82,22 +89,23 @@ namespace Fosol.Diagnostics
         /// <returns>Unique cache key value.</returns>
         public string GetCacheKey()
         {
-            return TraceWriter.GenerateCacheKey(this.SourceType, this.Data);
+            return TraceWriter.GenerateCacheKey(this.SourceType, this.Tags);
         }
 
         /// <summary>
         /// Generated a cache key for a TraceWriter.
         /// </summary>
         /// <param name="source">Source object Type creating the TraceWriter.</param>
+        /// <param name="tags">TraceTag object containing data for each TraceEvent.</param>
         /// <returns>Unique cache key value.</returns>
-        public static string GenerateCacheKey(Type source, TraceData data = null)
+        public static string GenerateCacheKey(Type source, TraceTag tags = null)
         {
             var sb = new StringBuilder();
-            if (data != null)
+            if (tags != null)
             {
-                foreach (var key in data.Keys)
+                foreach (var key in tags.Keys)
                 {
-                    sb.Append(string.Format("|{0}={1}", key, data[key].ToString()));
+                    sb.Append(string.Format("|{0}={1}", key, tags[key].ToString()));
                 }
             }
 

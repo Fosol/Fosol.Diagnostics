@@ -34,7 +34,9 @@ namespace Fosol.Diagnostics
             foreach (var filter in this)
             {
                 var validate = filter.Validate(trace);
-                if (filter.Condition == FilterCondition.And && valid && !validate)
+                if (filter.Condition == FilterCondition.None && !validate)
+                    valid = false;
+                else if (filter.Condition == FilterCondition.And && !validate)
                     valid = false;
                 else if (filter.Condition == FilterCondition.Xor && valid && validate)
                     valid = false;

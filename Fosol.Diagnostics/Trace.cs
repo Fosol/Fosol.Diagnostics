@@ -61,7 +61,7 @@ namespace Fosol.Diagnostics
         /// <param name="source">The source type of the object creating the writer.</param>
         /// <param name="data">TraceData object containing information to include with the TraceWriter.</param>
         /// <returns>TraceWriter object.</returns>
-        public static TraceWriter GetWriter(Type source, TraceData data = null)
+        public static TraceWriter GetWriter(Type source, TraceTag data = null)
         {
             return TraceManager.GetDefault().GetWriter(source, data);
         }

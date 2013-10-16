@@ -53,9 +53,14 @@
     <Compile Include="ExternalAppConfigTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TraceManagerTest.cs" />
+    <Compile Include="TraceFilterTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="TraceFilterTest01.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ExternalApp01.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

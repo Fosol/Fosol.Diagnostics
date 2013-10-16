@@ -187,7 +187,7 @@ namespace Fosol.Diagnostics
                         var listener = CreateListener(listener_config);
 
                         if (listener != null)
-                            this.Listeners.Add(listener);
+                            this.Listeners.Add(listener_config.Name, listener);
                     }
                 }
             }
@@ -410,7 +410,7 @@ namespace Fosol.Diagnostics
         /// <param name="source">Type of object creating the TraceWriter.</param>
         /// <param name="data">TraceData you would like to initialize the TraceWriter with.</param>
         /// <returns>The TraceWriter associated with the type.</returns>
-        public TraceWriter GetWriter(Type source, TraceData data = null)
+        public TraceWriter GetWriter(Type source, TraceTag data = null)
         {
             Fosol.Common.Validation.Assert.IsNotNull(source, "source");
             _Lock.EnterUpgradeableReadLock();
@@ -448,7 +448,7 @@ namespace Fosol.Diagnostics
         /// <param name="type">Source Type.</param>
         /// <param name="data">TraceData object.</param>
         /// <returns>A new instance of a TraceWriter.</returns>
-        private TraceWriter CreateWriter(Type type, TraceData data = null)
+        private TraceWriter CreateWriter(Type type, TraceTag data = null)
         {
             var writer = new TraceWriter(this, type, data);
             return writer;
@@ -464,10 +464,11 @@ namespace Fosol.Diagnostics
             _Lock.EnterReadLock();
             try
             {
-                foreach (var listener in this.Listeners)
+                foreach (var key in this.Listeners.Keys)
                 {
                     try
                     {
+                        var listener = this.Listeners[key];
                         listener.Write(trace);
 
                         if (this.AutoFlush)
@@ -483,6 +484,16 @@ namespace Fosol.Diagnostics
             {
                 _Lock.ExitReadLock();
             }
+        }
+
+        /// <summary>
+        /// Get the TraceListener with the specified name.
+        /// </summary>
+        /// <param name="name">Unique name to identify the TraceListener.</param>
+        /// <returns>TraceListener object.</returns>
+        public TraceListener GetListener(string name)
+        {
+            return this.Listeners.First(l => l.Key.Equals(name)).Value;
         }
         #endregion
 
@@ -531,10 +542,11 @@ namespace Fosol.Diagnostics
                 _Lock.EnterReadLock();
                 try
                 {
-                    foreach (var listener in this.Listeners)
+                    foreach (var key in this.Listeners.Keys)
                     {
                         try
                         {
+                            var listener = this.Listeners[key];
                             listener.Flush();
                         }
                         catch (Exception ex)

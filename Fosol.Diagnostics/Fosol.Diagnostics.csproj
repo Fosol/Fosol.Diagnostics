@@ -65,6 +65,7 @@
     <Compile Include="Exceptions\SourceConfigurationException.cs" />
     <Compile Include="Exceptions\TraceConfigurationException.cs" />
     <Compile Include="FilterCondition.cs" />
+    <Compile Include="Filters\TagFilter.cs" />
     <Compile Include="Listeners\DatabaseListener.cs" />
     <Compile Include="Listeners\DebugListener.cs" />
     <Compile Include="Listeners\EventLogListener.cs" />
@@ -80,7 +81,7 @@
     <Compile Include="Elements\TraceMessageElement.cs" />
     <Compile Include="Elements\TraceParameterElement.cs" />
     <Compile Include="Elements\TraceProcessElement.cs" />
-    <Compile Include="Elements\TraceDataElement.cs" />
+    <Compile Include="Elements\TraceTagElement.cs" />
     <Compile Include="Elements\TraceElement.cs" />
     <Compile Include="Elements\TraceLevelElement.cs" />
     <Compile Include="Elements\TraceSourceElement.cs" />
@@ -95,7 +96,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Trace.cs" />
-    <Compile Include="TraceData.cs" />
+    <Compile Include="TraceTag.cs" />
     <Compile Include="TraceEvent.cs" />
     <Compile Include="TraceFilter.cs" />
     <Compile Include="TraceLevel.cs" />

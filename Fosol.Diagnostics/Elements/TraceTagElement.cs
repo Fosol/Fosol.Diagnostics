@@ -15,7 +15,7 @@ namespace Fosol.Diagnostics.Elements
     /// TraceDataElement returns a value from the data collection with the specified name.
     /// </summary>
     [Element("data")]
-    public sealed class TraceDataElement
+    public sealed class TraceTagElement
         : TraceElement
     {
         #region Variables
@@ -40,7 +40,7 @@ namespace Fosol.Diagnostics.Elements
         /// Creates a new instance of a TraceDataElement object.
         /// </summary>
         /// <param name="attributes">StringDictionary object.</param>
-        public TraceDataElement(StringDictionary attributes = null)
+        public TraceTagElement(StringDictionary attributes = null)
             : base(attributes)
         {
         }
@@ -54,8 +54,8 @@ namespace Fosol.Diagnostics.Elements
         /// <returns>Message Source value.</returns>
         public override string Render(TraceEvent trace)
         {
-            if (trace != null && trace.Writer.Data != null)
-                return trace.Writer.Data[this.Key].ToString();
+            if (trace != null && trace.Writer.Tags != null)
+                return trace.Writer.Tags[this.Key].ToString();
 
             return null;
         }

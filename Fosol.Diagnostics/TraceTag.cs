@@ -10,10 +10,10 @@ namespace Fosol.Diagnostics
     /// Provides a way to enforce strong function and constructor definitions while allowing generic object data to be passed to them.
     /// Contains a collection of data within a dictionary.
     /// </summary>
-    public sealed class TraceData
+    public sealed class TraceTag
     {
         #region Variables
-        private readonly Dictionary<string, object> _Data;
+        private readonly Dictionary<string, object> _Tags;
         private bool _IsReadonly = false;
         #endregion
 
@@ -24,13 +24,13 @@ namespace Fosol.Diagnostics
         /// <exception cref="System.InvalidOperationException">Cannot set a value if IsReadonly = 'true'.</exception>
         public object this[string key]
         {
-            get { return _Data[key]; }
+            get { return _Tags[key]; }
             set 
             {
                 if (this.IsReadonly)
                     throw new InvalidOperationException();
 
-                _Data[key] = value; 
+                _Tags[key] = value; 
             }
         }
 
@@ -39,7 +39,7 @@ namespace Fosol.Diagnostics
         /// </summary>
         public Dictionary<string, object>.KeyCollection Keys
         {
-            get { return _Data.Keys; }
+            get { return _Tags.Keys; }
         }
 
         /// <summary>
@@ -57,9 +57,9 @@ namespace Fosol.Diagnostics
         /// Creates a new instance of a TraceData object.
         /// </summary>
         /// <param name="data">Generic data to be stored within this object.</param>
-        public TraceData()
+        public TraceTag()
         {
-            _Data = new Dictionary<string,object>();
+            _Tags = new Dictionary<string, object>();
         }
         #endregion
 
@@ -71,7 +71,7 @@ namespace Fosol.Diagnostics
         /// <returns>'True' if the key exists within the collection.</returns>
         public bool ContainsKey(string key)
         {
-            return _Data.ContainsKey(key);
+            return _Tags.ContainsKey(key);
         }
         #endregion
 

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Fosol.Diagnostics
 {
+    /// <summary>
+    /// The TraceListenerCollection is a dictionary containing TraceListener objects.
+    /// </summary>
     public sealed class TraceListenerCollection
-        : List<TraceListener>
+        : Dictionary<string, TraceListener>
     {
         #region Variables
         #endregion

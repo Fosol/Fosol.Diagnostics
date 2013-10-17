@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.20827.3
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Diagnostics", "Fosol.Diagnostics\Fosol.Diagnostics.csproj", "{922A65DB-9708-4147-9E1F-76724E90C70D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Diagnostics.Test.Console", "Fosol.Diagnostics.Test.Console\Fosol.Diagnostics.Test.Console.csproj", "{9AC48CA6-00BD-401A-9225-1C59ECB6339A}"
@@ -8,6 +10,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Common", "Fosol.Common\Fosol.Common\Fosol.Common.csproj", "{61D8CAC1-6F1B-48FC-B94C-0601F1CE78D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fosol.Diagnostics.UnitTests", "Fosol.Diagnostics.UnitTests\Fosol.Diagnostics.UnitTests.csproj", "{771433F1-4437-487E-B1BD-1DF887DC462A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fosol.NuGetWrapper", "Fosol.NuGetWrapper", "{941DCBE7-F03C-44B7-A0B2-07A237AE8EDC}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.README.md = .nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.README.md
+		.nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.targets = .nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.targets
+		.nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.xslt = .nuget\Fosol.NuGetWrapper\Fosol.NuGetWrapper.xslt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

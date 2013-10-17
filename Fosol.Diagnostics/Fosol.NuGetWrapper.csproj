@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="NuGetBuild">
+  <!--
+    PropertyGroup Section
+    =====================
+    The property group variables provide a way to control the build process; where files are copied and what values are used in the nuspec configuration.
+    
+    Variable Name           Default Value                   Description
+    `````````````           `````````````                   ```````````
+    NuGetExtensionsDir      $(SolutionDir).nuget\           Location of the installed Fosol.NuGetWrapper helper files.
+    NuGetSpecXsltName       Fosol.NuGetWrapper.xslt         File used to transform the default nuspec file in your project.
+    NuGetOutDir             $(OutDir)Package\               Location of output directory that will contain the files which will be included in your package.
+    
+    NuGetSpecId                                             The id of your NuGet package.  If no value specified it will use your nuspec file value.
+    NuGetSpecVersion                                        The version of your NuGet package.  If no value specified it will use your nuspec file value.
+    NuGetSpecTitle          $(ProjectName)                  The title of your NuGet package.  If no value specified it will use your nuspec file value.
+    NuGetSpecAuthors                                        The authors of your NuGet package.  If no value specified it will use your nuspec file value.
+    NuGetSpecOwners                                         The owners of your NuGet package.  If no value specified it will use your nuspec file value.
+    NuGetSpecDescription                                    The description of your NuGet package.  If no value specified it will use your nuspec file value.
+    
+    
+    ItemGroup Section
+    =================
+    The item group variables provide a way to control what files are included in the NuGet package that will be built.
+    
+    Variable Name           Default Value                   Description
+    `````````````           `````````````                   ```````````
+    NuGetContent                                            The file(s) that will be included in the package "content" folder.
+    NuGetController                                         The file(s) that will be included in the package "content\controller" folder.
+    NuGetLib                $(TargetPath)                   The file(s) that will be included in the package "lib" folder.
+    NuGetTool               $(TargetPath)                   The file(s) that will be included in the package "tools" folder.
+  -->
+
+  <PropertyGroup>
+    <NuGetExtensionsDir>$(SolutionDir).nuget\Fosol.NuGetWrapper\</NuGetExtensionsDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <NuGetLib Include="$(TargetDir)Fosol.Common.dll"/>
+    <NuGetLib Include="$(TargetDir)Fosol.Diagnostics.dll"/>
+  </ItemGroup>
+  <Import Project="$(NuGetExtensionsDir)Fosol.NuGetWrapper.targets" Condition="Exists('$(NuGetExtensionsDir)Fosol.NuGetWrapper.targets')"/>
+</Project>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="NuGetBuild">
+
+  <PropertyGroup>
+    <!-- Directory containing the NuGet.xslt file. -->
+    <NuGetExtensionsDir Condition=" '$(NuGetExtensionsDir)' == '' ">$(SolutionDir).nuget\</NuGetExtensionsDir>
+    <NuGetSpecXsltName Condition=" '$(NuGetSpecXsltName)' == '' ">Fosol.NuGetWrapper.xslt</NuGetSpecXsltName>
+    
+    <NuGetSpecExt>.nuspec</NuGetSpecExt>
+    <NuGetPackageExt>.nupkg</NuGetPackageExt>
+
+    <!-- NuGet Spec file property values. -->
+    <NuGetSpecId Condition=" '$(NuGetSpecId)' == '' "></NuGetSpecId>
+    <NuGetSpecVersion Condition=" '$(NuGetSpecVersion)' == '' "></NuGetSpecVersion>
+    <NuGetSpecTitle Condition=" '$(NuGetSpecTitle)' == '' ">$(ProjectName)</NuGetSpecTitle>
+    <NuGetSpecAuthors Condition=" '$(NuGetSpecAuthors)' == '' "></NuGetSpecAuthors>
+    <NuGetSpecOwners Condition=" '$(NuGetSpecOwners)' == '' ">$(NuGetSpecAuthors)</NuGetSpecOwners>
+    <NuGetSpecDescription Condition=" '$(NuGetSpecDescription)' == '' "></NuGetSpecDescription>
+
+    <!-- Directory location that the NuGet Package will be built. -->
+    <NuGetOutDir Condition=" '$(NuGetOutDir)' == '' ">$(OutDir)Package\</NuGetOutDir>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+      <Choose>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v3.5' And '$(TargetFrameworkProfile)' == '' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net35</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == '' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net40</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == 'Client' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net40-client</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == 'Full' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net40-full</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == 'CompactFramework' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net40-cf</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == 'Micro' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">netmf</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.5' And '$(TargetFrameworkProfile)' == '' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">net45</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v3.0' And '$(TargetFrameworkProfile)' == 'WindowsPhone' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">wp7</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' And '$(TargetFrameworkProfile)' == 'WindowsPhone' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">wp71</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.5' And '$(TargetFrameworkProfile)' == 'WindowsPhone' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">windowsphone8</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.5' And '$(TargetFrameworkProfile)' == 'WindowsStoreApp' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">windows8</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+      </Choose>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == 'Silverlight' ">
+      <Choose>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v3.0' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">sl3</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">sl4</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+        <When Condition=" '$(TargetFrameworkVersion)' == 'v5.0' ">
+          <PropertyGroup>
+            <NuGetTargetFrameworkVersion Condition=" '$(NuGetTargetFrameworkVersion)' == '' ">sl5</NuGetTargetFrameworkVersion>
+          </PropertyGroup>
+        </When>
+      </Choose>
+    </When>    
+  </Choose>
+
+  <!-- By default it will include the target assembly created by the build. -->
+  <ItemGroup Condition=" '@(NuGetLib)' == '' And '@(NuGetTool)' == '' And '@(NuGetContent)' == '' And '$(OutputType)' == 'Library' ">
+    <NuGetLib Include="$(TargetPath)"/>
+  </ItemGroup>
+  <ItemGroup Condition=" '@(NuGetLib)' == '' And '@(NuGetTool)' == '' And '@(NuGetContent)' == '' And '$(OutputType)' == 'Exe' ">
+    <NuGetTool Include="$(TargetPath)"/>
+  </ItemGroup>
+  <ItemGroup Condition=" '@(NuGetLib)' == '' And '@(NuGetTool)' == '' And '@(NuGetContent)' == '' And '$(OutputType)' == 'Winexe' ">
+    <NuGetTool Include="$(TargetPath)"/>
+  </ItemGroup>
+
+  <!-- Build a NuGet package based on the nuspec file in the project. -->
+  <Target Name="NuGetBuild" AfterTargets="CopyFilesToOutputDirectory">
+    <Message Text="Build NuGet Package for $(TargetFrameworkIdentifier) $(TargetFrameworkVersion) $(TargetFrameworkProfile)"/>
+    <Message Text="NuGet Build; @(NuGetBuild)"/>
+    <Message Text="NuGet Content; @(NuGetContent)"/>
+    <Message Text="NuGet Libs; @(NuGetLib)"/>
+    <Message Text="NuGet Tools; @(NuGetTool)"/>
+    <CallTarget Targets="NuGetInit;NuGetClean;NuGetPrepare;NuGetPack"/>
+  </Target>
+
+  <!-- Initialize information from the assembly. -->
+  <Target Name="NuGetInit">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="Info" />
+    </GetAssemblyIdentity>
+
+    <PropertyGroup>
+      <NuGetSpecId Condition=" '$(NuGetSpecId)' == '' ">%(Info.Name)</NuGetSpecId>
+      <NuGetSpecVersion Condition=" '$(NuGetSpecVersion)' == '' ">%(Info.Version)</NuGetSpecVersion>
+      <NuGetOutDir Condition=" '$(NuGetOutDir)' == '$(OutDir)Package\' ">$(NuGetOutDir)$(NuGetSpecId).$(NuGetSpecVersion)\</NuGetOutDir>
+      <NuGetSpecInput Condition=" '$(NuGetSpecInput)' == '' ">$(NuGetSpecId)$(NuGetSpecExt)</NuGetSpecInput>
+      <NuGetSpecInputPath Condition=" '$(NuGetSpecInputPath)' == '' ">$(ProjectDir)$(NuGetSpecId)$(NuGetSpecExt)</NuGetSpecInputPath>
+      <NuGetSpecOutput Condition=" '$(NuGetSpecOutput)' == '' ">$(NuGetSpecId).$(NuGetSpecVersion)$(NuGetSpecExt)</NuGetSpecOutput>
+      <NuGetSpecOutputPath Condition=" '$(NuGetSpecOutputPath)' == '' ">$(ProjectDir)$(NuGetOutDir)$(NuGetSpecOutput)</NuGetSpecOutputPath>
+      <NuGetOutput>$(NuGetOutDir)$(NuGetSpecId).$(NuGetSpecVersion)$(NuGetPackageExt)</NuGetOutput>
+    </PropertyGroup>
+
+    <Message Text="NuGetSpecId $(NuGetSpecId)"/>
+    <Message Text="NuGetSpecVersion $(NuGetSpecVersion)"/>
+    <Message Text="NuGetOutDir $(NuGetOutDir)"/>
+    <Message Text="NuGetSpecInput $(NuGetSpecInput)"/>
+    <Message Text="NuGetSpecInputPath $(NuGetSpecInputPath)"/>
+    <Message Text="NuGetSpecOutput $(NuGetSpecOutput)"/>
+    <Message Text="NuGetSpecOutputPath $(NuGetSpecOutputPath)"/>
+  </Target>
+
+  <!-- Clean up the files in the NuGet package directory. -->
+  <ItemGroup>
+    <FilesToDelete Include="$(NuGetOutDir)**\*.*"/>
+    <DirsToClean Include="$(OutDir)Package"/>
+  </ItemGroup>
+  
+  <Target Name="NuGetClean" AfterTargets="CoreClean">
+    <Delete Files="@(FilesToDelete)"/>
+    <!--<RemoveDir Directories="@(DirsToClean)"/>-->
+  </Target>
+
+  <!-- Copy files from the build directory into the NuGet package directory. -->
+  <Target Name="NuGetPrepare">
+    <Message Text="Prepare NuGet Package"/>
+    <MakeDir Directories="$(NuGetOutDir)"/>
+    <MakeDir Condition=" '@(NuGetBuild)' != '' " Directories="$(NuGetOutDir)build\%(RecursiveDir)"/>
+    <MakeDir Condition=" '@(NuGetContent)' != '' " Directories="$(NuGetOutDir)content\%(RecursiveDir)"/>
+    <MakeDir Condition=" '@(NuGetLib)' != '' " Directories="$(NuGetOutDir)lib\"/>
+    <MakeDir Condition=" '@(NuGetTool)' != '' " Directories="$(NuGetOutDir)tools\%(RecursiveDir)"/>
+    
+    <Message Text="BaseDir: $(MSBuildProjectDirectory)"/>
+    
+    <Copy SourceFiles="@(NuGetBuild)" DestinationFolder="$(NuGetOutDir)build\%(RecursiveDir)"/>
+    <Copy SourceFiles="@(NuGetContent)" DestinationFolder="$(NuGetOutDir)content\%(RecursiveDir)"/>
+    <Copy SourceFiles="@(NuGetLib)" DestinationFolder="$(NuGetOutDir)lib\$(NuGetTargetFrameworkVersion)"/>
+    <Copy SourceFiles="@(NuGetTool)" DestinationFolder="$(NuGetOutDir)tools\%(RecursiveDir)"/>
+    
+    <Message Text="Create NuGet Package Spec File"/>
+    <!-- Transform the default NuGet spec file into a new one in the package directory. -->
+    <XslTransformation XmlInputPaths="$(NuGetSpecInputPath)" 
+                       XslInputPath="$(NuGetExtensionsDir)$(NuGetSpecXsltName)" 
+                       OutputPaths="$(NuGetSpecOutputPath)" 
+                       Parameters="
+                        &lt;Parameter Name='id' Value='$(NuGetSpecId)'/&gt;
+                        &lt;Parameter Name='version' Value='$(NuGetSpecVersion)'/&gt;
+                        &lt;Parameter Name='title' Value='$(NuGetSpecTitle)'/&gt;
+                        &lt;Parameter Name='authors' Value='$(NuGetSpecAuthors)'/&gt;
+                        &lt;Parameter Name='owners' Value='$(NuGetSpecOwners)'/&gt;
+                        &lt;Parameter Name='description' Value='$(NuGetSpecDescription)'/&gt;
+                        "/>
+  </Target>
+
+  <!-- Create a NuGet Package based on the nuspec file created in the prior target. -->
+  <Target Name="NuGetPack">
+    <Message Text="NuGetOutput $(NuGetOutput)"/>
+    <Exec Command="nuget.exe pack &quot;$(NuGetSpecOutput)&quot; -Verbosity detailed -NonInteractive" WorkingDirectory="$(NuGetOutDir)"/>
+  </Target>
+
+</Project>
+

@@ -6,6 +6,9 @@ namespace Fosol.Diagnostics.UnitTests
     [TestClass]
     public class TraceFilterTest
     {
+        /// <summary>
+        /// Test the TagFilter.
+        /// </summary>
         [TestMethod]
         public void TagFilterTest()
         {

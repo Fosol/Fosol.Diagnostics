@@ -108,7 +108,9 @@
     <Compile Include="TraceSettingAttribute.cs" />
     <Compile Include="TraceWriter.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Fosol.NuGetWrapper.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Fosol.Diagnostics.nuspec" />
@@ -133,6 +135,7 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="Fosol.NuGetWrapper.csproj" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
